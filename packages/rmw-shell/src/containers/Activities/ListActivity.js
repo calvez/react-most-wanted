@@ -11,7 +11,11 @@ import SearchField from 'rmw-shell/lib/components/SearchField'
 import Tooltip from '@material-ui/core/Tooltip'
 import isGranted from 'rmw-shell/lib/utils/auth'
 import { Fab } from '@material-ui/core'
-import { FilterDrawer, filterSelectors, filterActions } from 'material-ui-filter'
+import {
+  FilterDrawer,
+  filterSelectors,
+  filterActions,
+} from 'material-ui-filter'
 import { compose } from 'redux'
 import { connect } from 'react-redux'
 import { getList } from 'firekit'
@@ -46,14 +50,15 @@ class ListActivity extends Component {
       handleCreateClick,
       disableCreate,
       title,
-      activityProps = {}
+      activityProps = {},
+      reactListProps = {},
     } = this.props
 
     const fields = filterFields.map(field => {
       if (!field.label) {
         return {
           label: intl.formatMessage({ id: `${field.name}_label` }),
-          ...field
+          ...field,
         }
       }
       return field
@@ -87,6 +92,7 @@ class ListActivity extends Component {
                 itemRenderer={i => renderItem(list[i].key, list[i].val)}
                 length={list ? list.length : 0}
                 type="simple"
+                {...reactListProps}
               />
             </List>
           </Scrollbar>
@@ -107,14 +113,18 @@ class ListActivity extends Component {
             </Fab>
           )}
         </div>
-        <FilterDrawer name={name} fields={fields} formatMessage={intl.formatMessage} />
+        <FilterDrawer
+          name={name}
+          fields={fields}
+          formatMessage={intl.formatMessage}
+        />
       </Activity>
     )
   }
 }
 
 ListActivity.propTypes = {
-  isGranted: PropTypes.func.isRequired
+  isGranted: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = (state, ownProps) => {
@@ -126,22 +136,25 @@ const mapStateToProps = (state, ownProps) => {
   const ref = location || name
 
   const { hasFilters } = filterSelectors.selectFilterProps(name, filters)
-  const list = filterSelectors.getFilteredList(ref, filters, getList(state, ref), fieldValue => fieldValue.val)
+  const list = filterSelectors.getFilteredList(
+    ref,
+    filters,
+    getList(state, ref),
+    fieldValue => fieldValue.val
+  )
 
   return {
     ref,
     name,
     hasFilters,
     list,
-    isGranted: grant => (customIsGranted ? customIsGranted(state, grant) : isGranted(state, grant))
+    isGranted: grant =>
+      customIsGranted ? customIsGranted(state, grant) : isGranted(state, grant),
   }
 }
 
 export default compose(
-  connect(
-    mapStateToProps,
-    { ...filterActions }
-  ),
+  connect(mapStateToProps, { ...filterActions }),
   injectIntl,
   withFirebase,
   withRouter

@@ -17,6 +17,7 @@ import { initializeMessaging } from '../../utils/messaging'
 import { saveAuthorisation } from '../../utils/auth'
 import { setPersistentValue } from '../../store/persistentValues/actions'
 import { useSelector, shallowEqual, useDispatch } from 'react-redux'
+import { withA2HS } from 'a2hs'
 import {
   watchAuth,
   clearInitialization,
@@ -25,8 +26,9 @@ import {
   initMessaging,
   watchPath,
 } from 'firekit'
-import { withA2HS } from 'a2hs'
+import { checkForUpdate } from '../../utils/messaging'
 
+checkForUpdate()
 const history = createBrowserHistory()
 
 const getActions = dispatch => {

@@ -1,346 +1,388 @@
-import AppBar from '@material-ui/core/AppBar'
-import Button from '@material-ui/core/Button'
-import Card from '@material-ui/core/Card'
-import CardActions from '@material-ui/core/CardActions'
-import CardContent from '@material-ui/core/CardContent'
-import IconButton from '@material-ui/core/IconButton'
-import LockIcon from '@material-ui/icons/Lock'
-import React, { useEffect } from 'react'
-import Toolbar from '@material-ui/core/Toolbar'
-import Tooltip from '@material-ui/core/Tooltip'
-import Typography from '@material-ui/core/Typography'
-import { GitHubIcon } from 'rmw-shell/lib/components/Icons'
+import React, { Component } from 'react'
 import { Helmet } from 'react-helmet'
+import { MuiThemeProvider, createMuiTheme } from '@material-ui/core/styles'
 import { withRouter } from 'react-router-dom'
-import { withStyles } from '@material-ui/core/styles'
-import messages_en from './en.json'
-import messages_de from './de.json'
-import messages_bs from './bs.json'
-import messages_es from './es.json'
-import messages_ru from './ru.json'
-import parseLanguages, { formatMessage } from 'rmw-shell/lib/utils/localeTools'
+import 'lazysizes'
+import AppBar from '@material-ui/core/AppBar'
+import ArrowUpward from '@material-ui/icons/ArrowUpward'
+import Button from '@material-ui/core/Button'
+import Code from '@material-ui/icons/Code'
+import CustomFade from 'rmw-shell/lib/components/CustomFade/CustomFade'
+import CustomLoad from 'rmw-shell/lib/components/CustomLoad/CustomLoad'
+import Fab from '@material-ui/core/Fab'
+import LockIcon from '@material-ui/icons/Lock'
+import PagePart from '../../components/LandingPage/PagePart'
+import Person from '../../components/Person/Person'
+import ResponsiveMenu from 'rmw-shell/lib/containers/ResponsveMenu/ResponsiveMenu'
+import Toolbar from '@material-ui/core/Toolbar'
+import Typography from '@material-ui/core/Typography'
+import Zoom from '@material-ui/core/Zoom'
+import formatMessage from './messages'
+import grey from '@material-ui/core/colors/grey'
 
-const messageSources = {
-  de: messages_de,
-  bs: messages_bs,
-  es: messages_es,
-  en: messages_en,
-  ru: messages_ru,
-}
-
-const styles = theme => ({
-  main: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  root: {
-    flexGrow: 1,
-    flex: '1 0 100%',
-    // height: '100%',
-    // overflow: 'hidden'
-  },
-  hero: {
-    height: '100%',
-    // minHeight: '80vh',
-    flex: '0 0 auto',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: theme.palette.background.paper,
-    color:
-      theme.palette.type === 'light'
-        ? theme.palette.primary.dark
-        : theme.palette.primary.main,
-  },
-  text: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    letterSpacing: '.7rem',
-    textIndent: '.7rem',
-    fontWeight: theme.typography.fontWeightLight,
-    [theme.breakpoints.only('xs')]: {
-      fontSize: 24,
-      letterSpacing: '.1em',
-      textIndent: '.1rem',
+const theme = createMuiTheme({
+  palette: {
+    primary: grey,
+    secondary: {
+      main: '#c62828',
     },
-    whiteSpace: 'nowrap',
-  },
-  h5: {
-    paddingLeft: theme.spacing(1) * 4,
-    paddingRight: theme.spacing(1) * 4,
-    marginTop: theme.spacing(1),
-    maxWidth: 600,
-    textAlign: 'center',
-    [theme.breakpoints.only('xs')]: {
-      fontSize: 18,
-    },
-  },
-  content: {
-    height: '100%',
-    // paddingTop: theme.spacing(1) * 8,
-    [theme.breakpoints.up('sm')]: {
-      paddingTop: theme.spacing(1),
-    },
-  },
-  button: {
-    marginTop: theme.spacing(1) * 3,
-  },
-  logo: {
-    color: 'red',
-    margin: `${theme.spacing(1) * 3}px 0 ${theme.spacing(1) * 4}px`,
-    width: '100%',
-    height: '40vw',
-    maxHeight: 250,
-  },
-  steps: {
-    maxWidth: theme.spacing(1) * 130,
-    margin: 'auto',
-  },
-  step: {
-    padding: `${theme.spacing(1) * 3}px ${theme.spacing(1) * 2}px`,
-  },
-  stepIcon: {
-    marginBottom: theme.spacing(1),
-  },
-  markdownElement: {},
-  cardsContent: {
-    padding: 15,
-    display: 'flex',
-    justifyContent: 'space-around',
-    flexWrap: 'wrap',
-    [theme.breakpoints.only('xs')]: {
-      width: '100%',
-      padding: 0,
-      paddingTop: 15,
-    },
-  },
-  card: {
-    minWidth: 275,
-    maxWidth: 350,
-    margin: 15,
-    [theme.breakpoints.only('xs')]: {
-      width: '100%',
-      margin: 0,
-      marginTop: 7,
-    },
-  },
-  bullet: {
-    display: 'inline-block',
-    margin: '0 2px',
-    transform: 'scale(0.8)',
-  },
-  cardTitle: {
-    marginBottom: 16,
-    fontSize: 14,
-  },
-  pos: {
-    marginBottom: 12,
   },
 })
 
-const match = parseLanguages(['en', 'es', 'bs', 'ru', 'de'], 'en')
+const isAuthorised = () => {
+  try {
+    const key = Object.keys(localStorage).find(e => e.match(/persist:root/))
+    const data = JSON.parse(localStorage.getItem(key))
+    const auth = JSON.parse(data.auth)
 
-// eslint-disable-next-line react/prop-types
-const LandingPage = ({ classes, history, theme }) => {
-  const messages = messageSources[match]
+    return auth && auth.isAuthorised
+  } catch (ex) {
+    return false
+  }
+}
 
-  const isAuthorised = () => {
-    try {
-      const key = Object.keys(localStorage).find(e => e.match(/persist:root/))
-      const data = JSON.parse(localStorage.getItem(key))
-      const auth = JSON.parse(data.auth)
+class LandingPage extends Component {
+  companies = React.createRef()
+  users = React.createRef()
+  about = React.createRef()
+  team = React.createRef()
+  state = {
+    anchorEl: null,
+    mobileMoreAnchorEl: null,
+    transparent: true,
+    users: [],
+  }
 
-      return auth && auth.isAuthorised
-    } catch (ex) {
-      return false
+  scroll(name) {
+    console.log('name', name)
+    console.log('ref', this[name])
+    console.log('current', this[name].current)
+
+    this[name] &&
+      this[name].current &&
+      this[name].current.scrollIntoView({
+        behavior: 'smooth',
+        alignToTop: true,
+      })
+  }
+
+  handleScroll = e => {
+    const { transparent } = this.state
+    const scrollTop =
+      window.pageYOffset ||
+      (document &&
+        document.documentElement &&
+        document.documentElement.scrollTop)
+
+    if (scrollTop > 50 && transparent) {
+      this.setState({ ...this.state, transparent: false })
+    }
+
+    if (scrollTop <= 50 && !transparent) {
+      this.setState({ transparent: true })
     }
   }
 
-  useEffect(() => {
+  async componentDidMount() {
+    const { history } = this.props
+
+    window.addEventListener('scroll', this.handleScroll)
+
     if (isAuthorised()) {
       history.push('/signin')
     }
-  })
+  }
 
-  return (
-    <div className={classes.main}>
-      <Helmet>
-        <meta name="theme-color" content={theme.palette.primary.main} />
-        <meta
-          name="apple-mobile-web-app-status-bar-style"
-          content={theme.palette.primary.main}
-        />
-        <meta
-          name="msapplication-navbutton-color"
-          content={theme.palette.primary.main}
-        />
-        <title>{formatMessage(messages, 'main.title')}</title>
-      </Helmet>
+  render() {
+    const { history } = this.props
+    const { transparent } = this.state
 
-      <AppBar position="static">
-        <Toolbar disableGutters>
-          <div style={{ flex: 1 }} />
+    const sections = [
+      {
+        name: formatMessage('companies'),
+        onClick: handleClose => {
+          this.scroll('companies')
+          //handleClose()
+        },
+      },
+      {
+        name: formatMessage('new_users'),
+        onClick: () => this.scroll('users'),
+      },
+      {
+        isDivider: true,
+      },
+      {
+        name: 'Anmelden',
+        onClick: () => history.push('/signin'),
+        icon: <LockIcon />,
+      },
+    ]
 
-          <Tooltip id="tooltip-icon1" title="Sign in">
-            <IconButton
-              name="signin"
-              aria-label="Open Github"
-              color="inherit"
-              onClick={() => {
-                history.push('/signin')
-              }}
-              rel="noopener"
-            >
-              <LockIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip id="tooltip-icon2" title="GitHub repository">
-            <IconButton
-              name="github"
-              aria-label="Open Github"
-              color="inherit"
-              href="https://github.com/TarikHuber/react-most-wanted"
-              target="_blank"
-              rel="noopener"
-            >
-              <GitHubIcon />
-            </IconButton>
-          </Tooltip>
-        </Toolbar>
-      </AppBar>
-
-      <div className={classes.root}>
-        <div className={classes.hero}>
-          <div className={classes.content}>
-            <img
-              src="/rmw.svg"
-              alt="Material-UI Logo"
-              className={classes.logo}
+    return (
+      <MuiThemeProvider theme={theme}>
+        <React.Fragment>
+          <Helmet>
+            <meta
+              name="keywords"
+              content={
+                'react,pwa,material-ui,redux,boilerplate,lighthouse,gdg,react.js'
+              }
             />
-            <div className={classes.text}>
-              <Typography
-                variant="h3"
-                align="center"
-                component="h1"
-                color="inherit"
-                gutterBottom
-                className={classes.title}
-              >
-                {formatMessage(messages, 'main.title')}
-              </Typography>
-              <Typography
-                variant="h5"
-                component="h2"
-                color="inherit"
-                gutterBottom
-                className={classes.h5}
-              >
-                {formatMessage(messages, 'main.intro')}
-              </Typography>
-              <Button
-                onClick={() => {
-                  history.push('/signin')
+            <meta
+              name="description"
+              content={
+                'React PWA boilerplate that is using create-react-app, redux and firebase '
+              }
+            />
+            <meta name="theme-color" content={theme.palette.primary.main} />
+            <meta
+              name="apple-mobile-web-app-status-bar-style"
+              content={theme.palette.primary.main}
+            />
+            <meta
+              name="msapplication-navbutton-color"
+              content={theme.palette.primary.main}
+            />
+            <title>React Most Wanted</title>
+          </Helmet>
+
+          <AppBar
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: transparent ? 'transparent' : undefined,
+              boxShadow: transparent ? 'none' : undefined,
+              transition: 'background 1s',
+            }}
+            position="static"
+          >
+            <Toolbar disableGutters>
+              <div style={{ flex: 1 }} />
+
+              <ResponsiveMenu sections={sections} transparent={transparent} />
+            </Toolbar>
+          </AppBar>
+
+          <div style={{ width: '100%', height: '100%' }}>
+            <div
+              style={{
+                height: '100%',
+                width: '100%',
+                backgroundImage: 'url(background.webp)',
+                backgroundRepeat: 'no-repeat',
+                backgroundAttachment: 'fixed',
+                backgroundSize: 'cover',
+                display: 'flex',
+                justifyContent: 'center',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  flexDirection: 'column',
                 }}
-                className={classes.button}
-                variant="outlined"
-                color="primary"
               >
-                {formatMessage(messages, 'main.start')}
-              </Button>
+                <img
+                  src={'/rmw.svg'}
+                  alt="logo"
+                  style={{ height: 180, maxWidth: 320, color: 'red' }}
+                />
+
+                <Typography
+                  variant="h3"
+                  align="center"
+                  component="h3"
+                  color="inherit"
+                  gutterBottom
+                  style={{
+                    color: 'white',
+                    marginTop: 18,
+                    textAlign: 'center',
+                  }}
+                >
+                  REACT MOST WANTED
+                </Typography>
+
+                <Typography
+                  variant="h5"
+                  component="h2"
+                  color="inherit"
+                  gutterBottom
+                  style={{ color: 'white', textAlign: 'center' }}
+                >
+                  {formatMessage('intro')}
+                </Typography>
+
+                <Button
+                  style={{ margin: 30, borderRadius: '40px' }}
+                  variant="contained"
+                  color="secondary"
+                  name="signin"
+                  onClick={() => {
+                    history.push('/signin')
+                  }}
+                >
+                  {formatMessage('try_it_out')}
+                </Button>
+              </div>
+            </div>
+            <PagePart title={formatMessage('about')}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-around',
+                  flexDirection: 'row',
+                  width: '100%',
+                  height: '100%',
+                  marginTop: 18,
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                }}
+              >
+                <img
+                  src="/rmw.svg"
+                  alt="rmw"
+                  style={{
+                    width: 'auto',
+                    height: 250,
+                    borderRadius: 10,
+                  }}
+                />
+                <Typography
+                  variant="h6"
+                  style={{
+                    flex: 1,
+                    margin: 8,
+                    textAlign: 'justify',
+                    maxWidth: 850,
+                  }}
+                >
+                  {formatMessage('about_text')}
+                </Typography>
+              </div>
+            </PagePart>
+            <div id="companies" ref={this.companies} style={{ minHeight: 300 }}>
+              <PagePart title={formatMessage('companies')}>
+                <CustomLoad
+                  load={() => {
+                    return import('../../containers/LandingPage/Companies')
+                  }}
+                />
+              </PagePart>
             </div>
 
-            <div className={classes.cardsContent}>
-              <Card className={classes.card}>
-                <CardContent>
-                  <Typography variant="h5" component="h2">
-                    {formatMessage(messages, 'main.instal')}
-                  </Typography>
-                  <br />
-                  <Typography>{formatMessage(messages, 'main.run')}</Typography>
-                  <br />
-                  <Typography className={classes.pos} color="textSecondary">
-                    {' '}
-                    npx create-react-app test-app --scripts-version
-                    rmw-react-scripts{' '}
-                  </Typography>
-                </CardContent>
-                <CardActions>
-                  <Button
-                    size="small"
-                    onClick={() => {
-                      var win = window.open(
-                        'https://github.com/TarikHuber/rmw-shell',
-                        '_blank'
-                      )
-                      win.focus()
-                    }}
-                  >
-                    {formatMessage(messages, 'main.more')}
-                  </Button>
-                </CardActions>
-              </Card>
-              <Card className={classes.card}>
-                <CardContent>
-                  <Typography variant="h5" component="h2">
-                    {formatMessage(messages, 'main.usage')}
-                  </Typography>
-                  <br />
-                  <Typography>{formatMessage(messages, 'main.set')}</Typography>
-                  <br />
-                  <Typography className={classes.pos} color="textSecondary">
-                    {'import App from \'rmw-shell\''}
-                    <br />
-                    {'<App appConfig={{ configureStore, ...config }} />'}
-                  </Typography>
-                </CardContent>
-                <CardActions>
-                  <Button
-                    size="small"
-                    onClick={() => {
-                      var win = window.open(
-                        'https://github.com/TarikHuber/react-most-wanted',
-                        '_blank'
-                      )
-                      win.focus()
-                    }}
-                  >
-                    {formatMessage(messages, 'main.more')}
-                  </Button>
-                </CardActions>
-              </Card>
-              <Card className={classes.card}>
-                <CardContent>
-                  <Typography variant="h5" component="h2">
-                    {formatMessage(messages, 'main.what')}
-                  </Typography>
-                  <Typography noWrap={false} color="textSecondary">
-                    {formatMessage(messages, 'main.this')}
-
-                    <br />
-                    {formatMessage(messages, 'main.demo')}
-                  </Typography>
-                </CardContent>
-                <CardActions>
-                  <Button
-                    size="small"
-                    onClick={() => {
-                      history.push('/signin')
-                    }}
-                  >
-                    {formatMessage(messages, 'main.start')}
-                  </Button>
-                </CardActions>
-              </Card>
+            <div id="users" ref={this.users} style={{ minHeight: 300 }}>
+              <PagePart title={formatMessage('new_users')}>
+                <CustomLoad
+                  load={() => {
+                    return import('../../containers/LandingPage/Users')
+                  }}
+                />
+              </PagePart>
             </div>
+
+            <PagePart title={formatMessage('team')}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-around',
+                  flexDirection: 'row',
+                  width: '100%',
+                  height: '100%',
+                  marginTop: 30,
+                  flexWrap: 'wrap',
+                }}
+              >
+                <Person id="babo" name="We" label="All of us" src="/rmw.svg" />
+                <Person id="chris" name="You" label="with you" src="/rmw.svg" />
+              </div>
+            </PagePart>
+
+            <div
+              style={{
+                height: '400px',
+                //width: '100%',
+                backgroundImage: 'url(bottom.jpg)',
+                backgroundRepeat: 'no-repeat',
+                backgroundAttachment: 'fixed',
+                backgroundPosition: 'center',
+                backgroundSize: 'cover',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexDirection: 'column',
+              }}
+            >
+              <CustomFade>
+                <Button
+                  style={{
+                    margin: 30,
+                    borderRadius: '40px',
+                  }}
+                  variant="contained"
+                  color="secondary"
+                  onClick={() => {
+                    window.open(
+                      'https://github.com/TarikHuber/react-most-wanted',
+                      '_blank'
+                    )
+                  }}
+                  startIcon={
+                    <Code
+                      style={{
+                        color: 'white',
+                        width: 40,
+                        height: 40,
+                      }}
+                    />
+                  }
+                >
+                  GitHub
+                </Button>
+              </CustomFade>
+            </div>
+
+            <Zoom in={!transparent} tiemout={2000}>
+              <Fab
+                color="secondary"
+                onClick={() => {
+                  window.scroll({ top: 0, left: 0, behavior: 'smooth' })
+                }}
+                style={{
+                  position: 'fixed',
+                  right: 8,
+                  bottom: 55,
+                  height: '50px',
+                  width: '50px',
+                }}
+              >
+                <ArrowUpward />
+              </Fab>
+            </Zoom>
+            <AppBar
+              position="relative"
+              style={{
+                withd: '100%',
+                padding: 18,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: 50,
+              }}
+              id="footer-text"
+            >
+              {`© ${new Date().getFullYear()} Copyright: yourcompany.com! All Rights Reserved`}
+            </AppBar>
           </div>
-        </div>
-      </div>
-    </div>
-  )
+        </React.Fragment>
+      </MuiThemeProvider>
+    )
+  }
 }
 
-export default withRouter(withStyles(styles, { withTheme: true })(LandingPage))
+export default withRouter(LandingPage)

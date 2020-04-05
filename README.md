@@ -12,7 +12,15 @@ I like `short` README's so here we go :sunglasses:
 Just run this command:
 
 ```js
-npm init react-app my-app --template rmw
+npx create-react-app my-app --template rmw
+cd my-app
+npm start
+```
+
+If you are using this `npx` command make sure to uninstall `create-react-app` on your device to have the newest version. To do so run:
+
+```js
+npm uninstall create-react-app
 ```
 
 ## I rather checkout the DEMO first. Where is it?
@@ -110,9 +118,3 @@ MIT
 [license-url]: https://github.com/TarikHuber/react-most-wanted/master/LICENSE
 [code-style-image]: https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square
 [code-style-url]: https://github.com/prettier/prettier
-
-## Support on Beerpay
-
-Hey dude! Help me out with a couple of :beers:!
-
-[![Beerpay](https://beerpay.io/TarikHuber/react-most-wanted/badge.svg?style=beer-square)](https://beerpay.io/TarikHuber/react-most-wanted) [![Beerpay](https://beerpay.io/TarikHuber/react-most-wanted/make-wish.svg?style=flat-square)](https://beerpay.io/TarikHuber/react-most-wanted?focus=wish)

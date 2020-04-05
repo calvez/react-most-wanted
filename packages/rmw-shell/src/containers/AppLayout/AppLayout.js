@@ -3,8 +3,11 @@ import Drawer from '../../containers/Drawer'
 import React, { useEffect } from 'react'
 import Routes from '../../containers/Routes'
 import { ToastContainer } from 'react-toastify'
-import { checkForUpdate } from '../../utils/messaging'
 import { makeStyles } from '@material-ui/styles'
+import withAppConfig from '../../contexts/AppConfigProvider/withAppConfigs'
+import Analytics from '../../containers/Analytics/Analytics'
+import { injectIntl } from 'react-intl'
+import PWAPrompt from 'react-ios-pwa-prompt'
 
 const useStyles = makeStyles({
   body: {
@@ -14,7 +17,7 @@ const useStyles = makeStyles({
     left: 0,
     right: 0,
     width: '100%',
-    height: '100%'
+    height: '100%',
   },
   root: {
     flexGrow: 1,
@@ -22,15 +25,11 @@ const useStyles = makeStyles({
     overflow: 'hidden',
     position: 'relative',
     display: 'flex',
-    width: '100%'
-  }
+    width: '100%',
+  },
 })
 
-export const AppLayout = () => {
-  useEffect(() => {
-    checkForUpdate()
-  })
-
+export const AppLayout = ({ appConfig, intl }) => {
   const classes = useStyles()
 
   return (
@@ -39,9 +38,38 @@ export const AppLayout = () => {
         <Drawer />
         <Routes />
         <ToastContainer />
+        {appConfig.analyticsProps && (
+          <Analytics {...appConfig.analyticsProps} />
+        )}
+        <PWAPrompt
+          promptOnVisit={1}
+          timesToShow={3}
+          copyTitle={intl.formatMessage({
+            id: 'ios_prompt_title',
+            defaultMessage: 'Add to Home Screen',
+          })}
+          copyClosePrompt={intl.formatMessage({
+            id: 'ios_prompt_close',
+            defaultMessage: 'Close',
+          })}
+          copyBody={intl.formatMessage({
+            id: 'ios_prompt_body',
+            defaultMessage:
+              'This website has app functionality. Add it to your home screen to use it in fullscreen and while offline.',
+          })}
+          copyShareButtonLabel={intl.formatMessage({
+            id: 'ios_prompt_share_button',
+            defaultMessage: '1) Press the \'Share\' button',
+          })}
+          copyAddHomeButtonLabel={intl.formatMessage({
+            id: 'ios_prompt_add_to_home_button',
+            defaultMessage: '2) Press \'Add to Home Screen\'',
+          })}
+          permanentlyHideOnDismiss={false}
+        />
       </div>
     </div>
   )
 }
 
-export default AppLayout
+export default withAppConfig(injectIntl(AppLayout))

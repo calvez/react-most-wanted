@@ -1,9 +1,10 @@
-//import 'intl-pluralrules'
 import en_messages from './en'
 import de_messages from './de'
+import fr_messages from './fr'
 import '@formatjs/intl-relativetimeformat/polyfill'
 import '@formatjs/intl-relativetimeformat/dist/locale-data/de'
 import '@formatjs/intl-relativetimeformat/dist/locale-data/en'
+import '@formatjs/intl-relativetimeformat/dist/locale-data/fr'
 import areIntlLocalesSupported from 'intl-locales-supported'
 import intl from 'intl'
 
@@ -32,12 +33,16 @@ if (global.Intl) {
 const locales = [
   {
     locale: 'en',
-    messages: en_messages
+    messages: en_messages,
   },
   {
     locale: 'de',
-    messages: de_messages
-  }
+    messages: de_messages,
+  },
+  {
+    locale: 'fr',
+    messages: fr_messages,
+  },
 ]
 
 export function getLocaleMessages(l, ls) {

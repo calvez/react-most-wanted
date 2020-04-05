@@ -11,8 +11,22 @@
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       {
+        "source": "/api/users",
+        "function": "httpsApiUsersOnRequest"
+      },
+      {
+        "source": "/api/companies",
+        "function": "httpsApiCompaniesOnRequest"
+      },
+      {
         "source": "**",
-        "destination": "/index.html"
+        "destination": "/index.html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
       }
     ],
     "headers": [

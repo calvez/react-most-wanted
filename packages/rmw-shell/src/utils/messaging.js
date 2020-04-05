@@ -1,16 +1,13 @@
 import ListItem from '@material-ui/core/ListItem'
 import ListItemIcon from '@material-ui/core/ListItemIcon'
 import ListItemText from '@material-ui/core/ListItemText'
+import NotificationToast from '../components/Notifications/NotificationToast'
+import PermissionRequestToast from '../components/Notifications/PermissionRequestToast'
 import React from 'react'
 import UpdateIcon from '@material-ui/icons/Update'
+import UpdateToast from '../components/Notifications/UpdateToast'
 import moment from 'moment'
 import { toast } from 'react-toastify'
-
-import PermissionRequestToast from '../components/Notifications/PermissionRequestToast'
-import NotificationToast from '../components/Notifications/NotificationToast'
-import UpdateToast from '../components/Notifications/UpdateToast'
-
-let updateMessageShown = false
 
 const initializeMessaging = (props, skipIfNoPermission = false) => {
   const { initMessaging, firebaseApp, auth } = props
@@ -21,16 +18,25 @@ const initializeMessaging = (props, skipIfNoPermission = false) => {
     .once('value', snap => {
       if (snap.val()) {
         console.log('Notifications disabled by user')
-      } else if (skipIfNoPermission && ('Notification' in window && Notification.permission !== 'granted')) {
+        return
+      }
+
+      if (
+        skipIfNoPermission &&
+        'Notification' in window &&
+        Notification.permission !== 'granted'
+      ) {
         console.log('No permissions for Notifications')
       } else {
         console.log('Notifications initialized')
+
         initMessaging(
           firebaseApp,
           token => {
             handleTokenChange(props, token)
           },
           payload => {
+            console.log('payload', payload)
             handleMessageReceived(props, payload)
           }
         )
@@ -39,9 +45,18 @@ const initializeMessaging = (props, skipIfNoPermission = false) => {
 }
 
 const requestNotificationPermission = props => {
-  const { auth, notificationPermissionRequested, simpleValues, setSimpleValue, messaging, appConfig } = props
+  const {
+    auth,
+    notificationPermissionRequested,
+    simpleValues,
+    setSimpleValue,
+    messaging,
+    appConfig,
+  } = props
 
-  const reengagingHours = appConfig.notificationsReengagingHours ? appConfig.notificationsReengagingHours : 48
+  const reengagingHours = appConfig.notificationsReengagingHours
+    ? appConfig.notificationsReengagingHours
+    : 48
   const requestNotificationPermission = notificationPermissionRequested
     ? moment().diff(notificationPermissionRequested, 'hours') > reengagingHours
     : true
@@ -56,13 +71,17 @@ const requestNotificationPermission = props => {
     setSimpleValue('notificationPermissionShown', true)
     toast.info(
       ({ closeToast }) => (
-        <PermissionRequestToast {...props} closeToast={closeToast} initializeMessaging={initializeMessaging} />
+        <PermissionRequestToast
+          {...props}
+          closeToast={closeToast}
+          initializeMessaging={initializeMessaging}
+        />
       ),
       {
         position: toast.POSITION.TOP_CENTER,
         autoClose: false,
         closeButton: false,
-        closeOnClick: false
+        closeOnClick: false,
       }
     )
   }
@@ -77,15 +96,20 @@ const handleMessageReceived = (props, payload) => {
   const notificationData = notifications[tag] ? notifications[tag] : false
 
   if (notificationData && pathname.indexOf(notificationData.path) === -1) {
-    toast.info(({ closeToast }) => getNotification(notificationData, closeToast), {
-      position: toast.POSITION.BOTTOM_RIGHT,
-      autoClose: notificationData.autoClose ? notificationData.autoClose : false,
-      closeButton:false
-    })
+    toast.info(
+      ({ closeToast }) => getNotification(notificationData, closeToast),
+      {
+        position: toast.POSITION.BOTTOM_RIGHT,
+        autoClose: notificationData.autoClose
+          ? notificationData.autoClose
+          : false,
+        closeButton: false,
+      }
+    )
   } else {
     toast.info(({ closeToast }) => getNotification(notification, closeToast), {
       position: toast.POSITION.BOTTOM_RIGHT,
-      closeButton:false
+      closeButton: false,
     })
   }
 }
@@ -104,13 +128,13 @@ const getNotification = (notification, closeToast) => {
     return notification.getNotification(notification, closeToast)
   }
 
-  return <NotificationToast notification={notification} closeToast={closeToast} />
+  return (
+    <NotificationToast notification={notification} closeToast={closeToast} />
+  )
 }
 
-const checkForUpdate=()=> {
-
-  if (window.updateAvailable && !updateMessageShown) {
-    updateMessageShown = true
+const checkForUpdate = () => {
+  if (window.update) {
     toast.info(
       ({ closeToast }) => (
         <UpdateToast handleUpdate={handleUpdate} closeToast={closeToast} />
@@ -118,17 +142,26 @@ const checkForUpdate=()=> {
       {
         position: toast.POSITION.BOTTOM_CENTER,
         autoClose: false,
-        closeButton:false
+        closeButton: false,
+        onClose: () => {
+          setTimeout(checkForUpdate, 60000)
+        },
       }
     )
+  } else {
+    setTimeout(checkForUpdate, 15000)
   }
 }
 
 export function handleUpdate() {
-  window.updateAvailable = false
-  // eslint-disable-next-line no-self-assign
-  window.location.href = window.location.href
+  window.update && window.update()
 }
 
-export { initializeMessaging, handleMessageReceived, handleTokenChange, getNotification, checkForUpdate }
+export {
+  initializeMessaging,
+  handleMessageReceived,
+  handleTokenChange,
+  getNotification,
+  checkForUpdate,
+}
 export default requestNotificationPermission

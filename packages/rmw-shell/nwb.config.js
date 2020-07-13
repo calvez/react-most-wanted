@@ -4,15 +4,21 @@ module.exports = {
   type: 'react-component',
   npm: {
     esModules: true,
-    umd: false
+    umd: false,
   },
   webpack: {
     html: {
-      template: 'demo/public/index.html'
+      template: 'demo/public/index.html',
     },
     aliases: {
       // 'rmw-shell': path.resolve('src'),
-      'rmw-shell/lib': path.resolve('src')
-    }
-  }
+      'rmw-shell/lib': path.resolve('src'),
+    },
+    extra: {
+      // Adding an extra rule which isn't managed by nwb
+      module: {
+        rules: [{ test: /\.md$/, loader: 'raw-loader' }],
+      },
+    },
+  },
 }

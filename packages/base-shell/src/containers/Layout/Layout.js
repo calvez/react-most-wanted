@@ -1,14 +1,13 @@
-import React, { Suspense, useContext, useEffect, useState, lazy } from 'react'
-import getDefaultRoutes from '../../components/DefaultRoutes/DefaultRoutes'
-import LocaleContext from '../../providers/Locale/Context'
-import ConfigContext from '../../providers/Config/Context'
+import '@formatjs/intl-relativetimeformat/polyfill'
 import LocaleProvider from '../../providers/Locale/Provider'
+import React, { Suspense, useContext, useEffect, useState, lazy } from 'react'
+import areIntlLocalesSupported from 'intl-locales-supported'
+import intl from 'intl'
 import { IntlProvider } from 'react-intl'
 import { Switch } from 'react-router-dom'
 import { getLocaleMessages } from '../../utils/locale'
-import '@formatjs/intl-relativetimeformat/polyfill'
-import areIntlLocalesSupported from 'intl-locales-supported'
-import intl from 'intl'
+import { useConfig } from '../../providers/Config'
+import { useLocale } from '../../providers/Locale'
 
 const loadLocalePolyfill = (locale) => {
   // START: Intl polyfill
@@ -34,14 +33,19 @@ const loadLocalePolyfill = (locale) => {
 
 export const LayoutContent = () => {
   const [messages, setMessages] = useState([])
-  const { appConfig } = useContext(ConfigContext)
-  const { components, routes = [], containers, locale: confLocale } =
-    appConfig || {}
+  const { appConfig } = useConfig()
+  const {
+    components,
+    routes = [],
+    containers,
+    locale: confLocale,
+    getDefaultRoutes,
+  } = appConfig || {}
   const { Menu, Loading } = components || {}
   const { locales, onError } = confLocale || {}
   const { LayoutContainer = React.Fragment } = containers || {}
-  const defaultRoutes = getDefaultRoutes(appConfig)
-  const { locale } = useContext(LocaleContext)
+  const defaultRoutes = getDefaultRoutes ? getDefaultRoutes(appConfig) : []
+  const { locale } = useLocale()
 
   useEffect(() => {
     const loadPolyfills = async () => {
@@ -91,7 +95,7 @@ export const LayoutContent = () => {
 }
 
 export const Layout = () => {
-  const { appConfig } = useContext(ConfigContext)
+  const { appConfig } = useConfig()
   const { locale } = appConfig || {}
   const { defaultLocale, persistKey } = locale || {}
   return (

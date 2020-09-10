@@ -5,10 +5,10 @@ import DaschboardIcon from '@material-ui/icons/Dashboard'
 import InfoOutlined from '@material-ui/icons/InfoOutlined'
 import LockIcon from '@material-ui/icons/Lock'
 import ExitToAppIcon from '@material-ui/icons/ExitToApp'
-import { logout } from '../utils/auth'
 import LanguageIcon from '@material-ui/icons/Language'
 import SettingsIcon from '@material-ui/icons/SettingsApplications'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
+import ChatBubble from '@material-ui/icons/ChatBubble'
 import GetApp from '@material-ui/icons/GetApp'
 import ChromeReaderMode from '@material-ui/icons/ChromeReaderMode'
 import StyleIcon from '@material-ui/icons/Style'
@@ -23,10 +23,11 @@ const getMenuItems = (props) => {
     menuContext,
     themeContext,
     a2HSContext,
+    auth: authData,
   } = props
-  const { auth } = appConfig || {}
   const { isDesktop, isAuthMenuOpen, useMiniMode, setMiniMode } = menuContext
   const { themeID, setThemeID } = themeContext
+  const { auth, setAuth } = authData
   const { isAppInstallable, isAppInstalled, deferredPrompt } = a2HSContext
 
   const localeItems = allLocales.map((l) => {
@@ -41,7 +42,7 @@ const getMenuItems = (props) => {
     }
   })
 
-  const isAuthorised = auth.isAuthenticated()
+  const isAuthorised = auth.isAuthenticated
 
   const themeItems = allThemes.map((t) => {
     return {
@@ -59,7 +60,11 @@ const getMenuItems = (props) => {
     return [
       {
         value: '/signin',
-        onClick: isAuthorised ? logout : () => {},
+        onClick: isAuthorised
+          ? () => {
+              setAuth({ isAuthenticated: false })
+            }
+          : () => {},
         visible: true,
         primaryText: isAuthorised
           ? intl.formatMessage({ id: 'sign_out' })
@@ -74,6 +79,15 @@ const getMenuItems = (props) => {
       visible: isAuthorised,
       primaryText: intl.formatMessage({ id: 'home' }),
       leftIcon: <DaschboardIcon />,
+    },
+    {
+      value: '/dialog_demo',
+      visible: isAuthorised,
+      primaryText: intl.formatMessage({
+        id: 'dialog_demo',
+        defaultMessage: 'Dialog demo',
+      }),
+      leftIcon: <ChatBubble />,
     },
     {
       value: '/about',

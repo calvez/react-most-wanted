@@ -1,9 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import { useHistory } from 'react-router-dom'
-import { saveAuthorisation, isAuthorised } from '../../utils/auth'
 import { useIntl } from 'react-intl'
+import { useAuth } from 'base-shell/lib/providers/Auth'
 
 const SignIn = () => {
+  const { setAuth, auth } = useAuth()
   let history = useHistory()
   const intl = useIntl()
   const [username, setUsername] = useState('')
@@ -17,17 +18,14 @@ const SignIn = () => {
   }
 
   const authenticate = (user) => {
-    saveAuthorisation(user)
+    setAuth({ isAuthenticated: true, ...user })
     let _location = history.location
-    let isAuth = isAuthorised()
-    if (isAuth) {
-      let _route = '/home'
-      if (_location.state && _location.state.from) {
-        _route = _location.state.from.pathname
-        history.push(_route)
-      } else {
-        history.push(_route)
-      }
+    let _route = '/home'
+    if (_location.state && _location.state.from) {
+      _route = _location.state.from.pathname
+      history.push(_route)
+    } else {
+      history.push(_route)
     }
   }
 

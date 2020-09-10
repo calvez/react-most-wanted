@@ -1,14 +1,14 @@
-import { useHistory } from 'react-router-dom'
-import { saveAuthorisation, isAuthorised } from '../../utils/auth'
-import { useIntl } from 'react-intl'
+import Button from '@material-ui/core/Button'
 import Page from 'material-ui-shell/lib/containers/Page/Page'
+import Paper from '@material-ui/core/Paper'
 import React, { useState, useContext } from 'react'
 import TextField from '@material-ui/core/TextField'
 import Typography from '@material-ui/core/Typography'
 import { makeStyles } from '@material-ui/core/styles'
-import Button from '@material-ui/core/Button'
-import Paper from '@material-ui/core/Paper'
-import MenuContext from 'material-ui-shell/lib/providers/Menu/Context'
+import { useAuth } from 'base-shell/lib/providers/Auth'
+import { useHistory } from 'react-router-dom'
+import { useIntl } from 'react-intl'
+import { useMenu } from 'material-ui-shell/lib/providers/Menu'
 
 const useStyles = makeStyles((theme) => ({
   paper: {
@@ -55,7 +55,10 @@ const SignUp = () => {
   const history = useHistory()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const { setAuthMenuOpen } = useContext(MenuContext)
+  const [userEmail, setUserEmail] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const { setAuthMenuOpen } = useMenu()
+  const { auth, setAuth } = useAuth()
 
   function handleSubmit(event) {
     event.preventDefault()
@@ -66,18 +69,17 @@ const SignUp = () => {
   }
 
   const authenticate = (user) => {
-    saveAuthorisation(user)
-    let _location = history.location
-    let isAuth = isAuthorised()
+    setAuth({ isAuthenticated: true, ...user })
+
     setAuthMenuOpen(false)
-    if (isAuth) {
-      let _route = '/home'
-      if (_location.state && _location.state.from) {
-        _route = _location.state.from.pathname
-        history.push(_route)
-      } else {
-        history.push(_route)
-      }
+    let _location = history.location
+
+    let _route = '/home'
+    if (_location.state && _location.state.from) {
+      _route = _location.state.from.pathname
+      history.push(_route)
+    } else {
+      history.push(_route)
     }
   }
 
@@ -114,8 +116,8 @@ const SignUp = () => {
               autoFocus
             />
             <TextField
-              value={username}
-              onInput={(e) => setUsername(e.target.value)}
+              value={userEmail}
+              onInput={(e) => setUserEmail(e.target.value)}
               variant="outlined"
               margin="normal"
               required
@@ -145,8 +147,8 @@ const SignUp = () => {
               autoComplete="current-password"
             />
             <TextField
-              value={password}
-              onInput={(e) => setPassword(e.target.value)}
+              value={confirmPassword}
+              onInput={(e) => setConfirmPassword(e.target.value)}
               variant="outlined"
               margin="normal"
               required

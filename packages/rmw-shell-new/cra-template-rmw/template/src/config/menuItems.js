@@ -5,7 +5,6 @@ import DaschboardIcon from '@material-ui/icons/Dashboard'
 import InfoOutlined from '@material-ui/icons/InfoOutlined'
 import LockIcon from '@material-ui/icons/Lock'
 import ExitToAppIcon from '@material-ui/icons/ExitToApp'
-import { logout } from '../utils/auth'
 import LanguageIcon from '@material-ui/icons/Language'
 import SettingsIcon from '@material-ui/icons/SettingsApplications'
 import MenuOpenIcon from '@material-ui/icons/MenuOpen'
@@ -13,6 +12,7 @@ import GetApp from '@material-ui/icons/GetApp'
 import ChromeReaderMode from '@material-ui/icons/ChromeReaderMode'
 import StyleIcon from '@material-ui/icons/Style'
 import allThemes from './themes'
+import AccountBoxIcon from '@material-ui/icons/AccountBox'
 
 const getMenuItems = (props) => {
   const {
@@ -23,11 +23,19 @@ const getMenuItems = (props) => {
     menuContext,
     themeContext,
     a2HSContext,
+    firebaseApp,
+    auth: authData,
   } = props
-  const { auth } = appConfig || {}
-  const { isDesktop, isAuthMenuOpen, useMiniMode, setMiniMode } = menuContext
+  const {
+    isDesktop,
+    isAuthMenuOpen,
+    useMiniMode,
+    setMiniMode,
+    setAuthMenuOpen,
+  } = menuContext
   const { themeID = 'en', setThemeID } = themeContext || {}
   const { isAppInstallable, isAppInstalled, deferredPrompt } = a2HSContext
+  const { auth } = authData
 
   const localeItems = allLocales.map((l) => {
     return {
@@ -41,7 +49,7 @@ const getMenuItems = (props) => {
     }
   })
 
-  const isAuthorised = auth.isAuthenticated()
+  const isAuthorised = auth.isAuthenticated
 
   const themeItems = allThemes.map((t) => {
     return {
@@ -55,11 +63,24 @@ const getMenuItems = (props) => {
     }
   })
 
+  const handleSignOut = () => {
+    firebaseApp.auth().signOut()
+    localStorage.clear()
+  }
+
   if (isAuthMenuOpen || !isAuthorised) {
     return [
       {
+        value: '/my_account',
+        primaryText: intl.formatMessage({
+          id: 'my_account',
+          defaultMessage: 'My Account',
+        }),
+        leftIcon: <AccountBoxIcon />,
+      },
+      {
         value: '/signin',
-        onClick: isAuthorised ? logout : () => {},
+        onClick: isAuthorised ? () => handleSignOut() : () => {},
         visible: true,
         primaryText: isAuthorised
           ? intl.formatMessage({ id: 'sign_out' })
@@ -79,6 +100,41 @@ const getMenuItems = (props) => {
       value: '/about',
       visible: true,
       primaryText: intl.formatMessage({ id: 'about' }),
+      leftIcon: <InfoOutlined />,
+    },
+    {
+      primaryText: intl.formatMessage({
+        id: 'firebase',
+        defaultMessage: 'Firebase',
+      }),
+      visible: isAuthorised,
+      primaryTogglesNestedList: true,
+      leftIcon: <SettingsIcon />,
+      nestedItems: [
+        {
+          value: '/firebase_paths',
+          visible: isAuthorised,
+          primaryText: intl.formatMessage({
+            id: 'firebase_paths',
+            defaultMessage: 'Paths',
+          }),
+          leftIcon: <DaschboardIcon />,
+        },
+        {
+          value: '/firebase_lists',
+          visible: isAuthorised,
+          primaryText: intl.formatMessage({
+            id: 'firebase_lists',
+            defaultMessage: 'Lists',
+          }),
+          leftIcon: <DaschboardIcon />,
+        },
+      ],
+    },
+    {
+      value: '/users',
+      visible: true,
+      primaryText: intl.formatMessage({ id: 'users' }),
       leftIcon: <InfoOutlined />,
     },
     { divider: true },

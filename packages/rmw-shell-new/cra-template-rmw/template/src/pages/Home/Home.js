@@ -1,20 +1,22 @@
 import React, { useContext, useEffect } from 'react'
-import { injectIntl } from 'react-intl'
+import { useIntl } from 'react-intl'
 import Page from 'material-ui-shell/lib/containers/Page/Page'
 import Scrollbar from 'material-ui-shell/lib/components/Scrollbar/Scrollbar'
-import withFirebase from 'rmw-shell/lib/providers/Firebase/withFirebase'
-import FirebaseContext from 'rmw-shell/lib/providers/Firebase/Context'
+import { useFirebase } from 'rmw-shell/lib/providers/Firebase'
+import { usePaths } from 'rmw-shell/lib/providers/Firebase/Paths'
 import { useSelector } from 'react-redux'
 import { getPath } from 'firekit'
 import { destroyList } from 'firekit/lib/store/lists/actions'
 
-const HomePage = ({ intl, watchList: watchList2 }) => {
-  const { watchPath, destroyPath } = useContext(FirebaseContext)
-  const users_count = useSelector((state) => getPath(state, 'users_count', 0))
+const HomePage = ({ watchList: watchList2 }) => {
+  const intl = useIntl()
+  const { destroyPath } = useFirebase()
+  const { watchPath, getPath, clearPath } = usePaths()
+  const users_count = getPath('users_count', 0) //useSelector((state) => getPath(state, 'users_count', 0))
 
   useEffect(() => {
     watchPath('users_count')
-    return () => destroyPath('users_count')
+    return () => clearPath('users_count')
   }, [])
 
   return (
@@ -36,4 +38,4 @@ const HomePage = ({ intl, watchList: watchList2 }) => {
     </Page>
   )
 }
-export default injectIntl(HomePage)
+export default HomePage

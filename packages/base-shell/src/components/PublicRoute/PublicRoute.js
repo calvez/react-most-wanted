@@ -1,17 +1,15 @@
 import React, { useContext } from 'react'
-import ConfigContext from '../../providers/Config/Context'
 import { Route, Redirect } from 'react-router-dom'
+import { useAuth } from '../../providers/Auth'
 
 function PublicRoute({ component: Component, redirectTo = '/', ...rest }) {
-  const { appConfig } = useContext(ConfigContext)
-  const { auth } = appConfig || {}
-  const { isAuthenticated = () => false } = auth || {}
+  const { auth } = useAuth()
 
   return (
     <Route
       {...rest}
       render={(props) =>
-        !isAuthenticated(appConfig) ? (
+        !auth.isAuthenticated ? (
           <Component {...props} />
         ) : (
           <Redirect

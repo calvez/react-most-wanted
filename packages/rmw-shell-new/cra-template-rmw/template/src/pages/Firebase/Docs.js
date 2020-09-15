@@ -1,19 +1,16 @@
 import Button from '@material-ui/core/Button'
 import CircularProgress from '@material-ui/core/CircularProgress'
-import Delete from '@material-ui/icons/Delete'
-import IconButton from '@material-ui/core/IconButton'
 import Page from 'material-ui-shell/lib/containers/Page/Page'
 import Paper from '@material-ui/core/Paper'
 import React, { useContext, useEffect, useState } from 'react'
 import Scrollbar from 'material-ui-shell/lib/components/Scrollbar/Scrollbar'
 import TextField from '@material-ui/core/TextField'
-import Typography from '@material-ui/core/Typography'
+import { Typography } from '@material-ui/core'
 import { useFirebase } from 'rmw-shell/lib/providers/Firebase'
 import { useIntl } from 'react-intl'
-import { useLists } from 'rmw-shell/lib/providers/Firebase/Lists'
-import { usePaths } from 'rmw-shell/lib/providers/Firebase/Paths'
+import { useDocs } from 'rmw-shell/lib/providers/Firebase/Docs'
 
-const defaultPath = 'test_list'
+const defaultPath = 'test/doc'
 
 export default function () {
   const intl = useIntl()
@@ -21,34 +18,29 @@ export default function () {
   const [value, setValue] = useState('')
   const {
     firebaseApp,
-    watchList,
-    getList,
-    clearList,
-    getListError,
-    isListLoading,
-    clearAllLists,
-    hasListError,
-    unwatchList,
-  } = useLists()
+    watchDoc,
+    getDoc,
+    clearDoc,
+    getDocError,
+    isDocLoading,
+    clearAllDocs,
+    hasDocError,
+    unwatchDoc,
+  } = useDocs()
 
-  const list = getList(path)
-  const error = JSON.stringify(getListError(path))
-  const isLoading = isListLoading(path)
+  const databaseValue = JSON.stringify(getDoc(path, 'no value'))
+  const error = JSON.stringify(getDocError(path))
+  const isLoading = isDocLoading(path)
 
   return (
     <Page
       pageTitle={intl.formatMessage({
-        id: 'firebase_lists_demo',
-        defaultMessage: 'Firebase Lists Demo',
+        id: 'firebase_paths_demo',
+        defaultMessage: 'Firebase Docs Demo',
       })}
     >
       <Scrollbar
-        style={{
-          height: '100%',
-          width: '100%',
-          display: 'flex',
-          flex: 1,
-        }}
+        style={{ height: '100%', width: '100%', display: 'flex', flex: 1 }}
       >
         <div
           style={{
@@ -67,7 +59,7 @@ export default function () {
             }}
           >
             <TextField
-              label="List path"
+              label="Doc"
               value={path}
               onChange={(e) => setPath(e.target.value)}
               variant="outlined"
@@ -77,32 +69,10 @@ export default function () {
             {isLoading && <CircularProgress />}
             <br />
             <br />
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                maxHeight: 300,
-                overflow: 'auto',
-              }}
-            >
-              {list.map((i) => {
-                return (
-                  <div key={i.key}>
-                    {JSON.stringify(i.val)}
-                    <IconButton
-                      onClick={() => {
-                        firebaseApp.database().ref(`${path}/${i.key}`).set(null)
-                      }}
-                    >
-                      <Delete color="error" />
-                    </IconButton>
-                  </div>
-                )
-              })}
-            </div>
+            {databaseValue}
             <br />
             <br />
-            {hasListError(path) && (
+            {hasDocError(path) && (
               <Typography variant="subtitle1" color="error">
                 Error: {error}
               </Typography>
@@ -114,15 +84,7 @@ export default function () {
                 style={{ margin: 5 }}
                 variant="contained"
                 color="primary"
-                onClick={
-                  () => watchList(firebaseApp.database().ref(path))
-                  // OR
-                  // watchList(path)
-                  // OR using an alias
-                  // watchList(path,'your_alias)
-                  // OR combination
-                  // watchList('firebaseApp.database().ref(path),'your_alias)
-                }
+                onClick={() => watchDoc(path)}
               >
                 Watch
               </Button>
@@ -130,7 +92,7 @@ export default function () {
                 style={{ margin: 5 }}
                 variant="contained"
                 color="primary"
-                onClick={() => unwatchList(path)}
+                onClick={() => unwatchDoc(path)}
               >
                 unWatch
               </Button>
@@ -138,7 +100,7 @@ export default function () {
                 style={{ margin: 5 }}
                 variant="contained"
                 color="primary"
-                onClick={() => clearList(path)}
+                onClick={() => clearDoc(path)}
               >
                 clear
               </Button>
@@ -156,12 +118,17 @@ export default function () {
                 style={{ margin: 5 }}
                 variant="contained"
                 color="primary"
-                onClick={async () => {
-                  await firebaseApp.database().ref(path).push(value)
-                  setValue('')
+                onClick={() => {
+                  try {
+                    firebaseApp.firestore().doc(path).set({ val: value })
+                  } catch (error) {
+                    console.log('error', error)
+                  }
+
+                  //firebaseApp.fire().ref(path).set(value)
                 }}
               >
-                ADD
+                set
               </Button>
             </div>
           </Paper>

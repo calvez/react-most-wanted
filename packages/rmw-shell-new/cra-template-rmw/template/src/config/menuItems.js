@@ -129,6 +129,33 @@ const getMenuItems = (props) => {
           }),
           leftIcon: <DaschboardIcon />,
         },
+        {
+          value: '/firebase_docs',
+          visible: isAuthorised,
+          primaryText: intl.formatMessage({
+            id: 'firebase_docs',
+            defaultMessage: 'Docs',
+          }),
+          leftIcon: <DaschboardIcon />,
+        },
+        {
+          value: '/firebase_cols',
+          visible: isAuthorised,
+          primaryText: intl.formatMessage({
+            id: 'firebase_cols',
+            defaultMessage: 'Cols',
+          }),
+          leftIcon: <DaschboardIcon />,
+        },
+        {
+          value: '/firebase_messaging',
+          visible: isAuthorised,
+          primaryText: intl.formatMessage({
+            id: 'firebase_messaging',
+            defaultMessage: 'Messaging',
+          }),
+          leftIcon: <DaschboardIcon />,
+        },
       ],
     },
     {

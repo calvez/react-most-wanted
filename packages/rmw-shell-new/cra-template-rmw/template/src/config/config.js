@@ -1,7 +1,6 @@
 import React, { lazy } from 'react'
 import locales from './locales'
 import routes from './routes'
-import { getAuth } from '../utils/auth'
 import getMenuItems from './menuItems'
 import themes from './themes'
 import parseLanguages from 'base-shell/lib/utils/locale'
@@ -23,6 +22,7 @@ const config = {
       projectId: 'react-most-wanted-dev',
       storageBucket: 'react-most-wanted-dev.appspot.com',
       messagingSenderId: '70650394824',
+      appId: '1:70650394824:web:7cd3113c37741efc',
     },
     firebaseuiProps: {
       signInOptions: [
@@ -33,6 +33,10 @@ const config = {
         'password',
         'phone',
       ],
+    },
+    messaging: {
+      publicVapidKey:
+        'BGddXH_O6qLmcingsSJx-R3hC8U9yUr2mW4ko63fF__e50WvfRcBfZu_JyBzLI35DNUE5x_9CPBqe64BWniCxV0',
     },
   },
   routes,

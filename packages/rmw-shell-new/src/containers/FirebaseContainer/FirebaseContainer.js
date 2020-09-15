@@ -1,9 +1,11 @@
 import React, { useContext, useEffect } from 'react'
 import { useConfig } from 'base-shell/lib/providers/Config'
 import { useAuth } from 'base-shell/lib/providers/Auth'
-import FirebaseProvider from 'rmw-shell/lib/providers/Firebase/Provider'
+import FirebaseProvider from 'rmw-shell/lib/providers/Firebase'
 import PathsProvider from 'rmw-shell/lib/providers/Firebase/Paths/Provider'
 import ListsProvider from 'rmw-shell/lib/providers/Firebase/Lists/Provider'
+import DocsProvider from 'rmw-shell/lib/providers/Firebase/Docs/Provider'
+import ColsProvider from 'rmw-shell/lib/providers/Firebase/Cols/Provider'
 import firebase from 'firebase/app'
 import 'firebase/auth'
 import 'firebase/database'
@@ -47,15 +49,21 @@ export default function ({ children }) {
   }
 
   useEffect(() => {
-    firebaseApp.auth().onAuthStateChanged((user) => {
+    const unsubscribe = firebaseApp.auth().onAuthStateChanged((user) => {
       setAuth(defaultUserData(user))
     })
+
+    //return unsubscribe()
   }, [])
 
   return (
     <FirebaseProvider firebaseApp={firebaseApp}>
       <PathsProvider firebaseApp={firebaseApp}>
-        <ListsProvider firebaseApp={firebaseApp}>{children}</ListsProvider>
+        <ListsProvider firebaseApp={firebaseApp}>
+          <DocsProvider firebaseApp={firebaseApp}>
+            <ColsProvider firebaseApp={firebaseApp}>{children}</ColsProvider>
+          </DocsProvider>
+        </ListsProvider>
       </PathsProvider>
     </FirebaseProvider>
   )

@@ -1,48 +1,56 @@
-import React, { Component } from 'react'
-import { injectIntl } from 'react-intl'
+import React, { useEffect, useCallback } from 'react'
+import { useIntl } from 'react-intl'
+import * as firebaseui from 'firebaseui'
+import { getAuth } from 'firebase/auth'
+
 let authUi = null
 
-export class AuthUI extends Component {
-  async componentDidMount() {
-    const { firebaseApp, uiConfig, intl } = this.props
+/*eslint-disable */
+const AuthUI = ({ uiConfig }) => {
+  const intl = useIntl()
+  const locale = intl.locale
 
-    let firebaseui = null
+  const auth = getAuth()
 
-    try {
-      const { default: defaultImport } = await import(`./npm__${intl.locale}`)
-      firebaseui = defaultImport
-    } catch (error) {
-      firebaseui = await import('firebaseui')
-    }
-
+  const initAuth = useCallback(async () => {
     try {
       if (!firebaseui.auth.AuthUI.getInstance()) {
-        authUi = new firebaseui.auth.AuthUI(firebaseApp.auth())
+        authUi = new firebaseui.auth.AuthUI(auth)
       } else {
-        // console.log(firebaseui.auth)
+        authUi = firebaseui.auth.AuthUI.getInstance()
       }
     } catch (err) {
       console.warn(err)
     }
 
-    authUi.start('#firebaseui-auth', uiConfig)
-  }
-
-  componentWillUnmount() {
     try {
-      authUi.reset()
-    } catch (err) {
-      console.warn(err)
+      authUi.start('#firebaseui-auth', uiConfig)
+    } catch (error) {
+      console.warn(error)
     }
-  }
+  }, [locale])
 
-  render() {
-    return (
-      <div style={{ paddingTop: 35 }}>
-        <div id="firebaseui-auth" />
-      </div>
-    )
-  }
+  useEffect(() => {
+    initAuth()
+
+    return () => {
+      try {
+        if (authUi) {
+          authUi.reset()
+        }
+      } catch (err) {
+        console.warn(err)
+      }
+    }
+  }, [initAuth, authUi])
+
+  return (
+    <div style={{ paddingTop: 35 }}>
+      <div key={`${intl.locale}`} id="firebaseui-auth" />
+    </div>
+  )
 }
 
-export default injectIntl(AuthUI)
+export default AuthUI
+
+/*eslint-enable */

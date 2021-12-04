@@ -1,86 +1,34 @@
-import AppBar from '@material-ui/core/AppBar'
-import ChevronLeft from '@material-ui/icons/ChevronLeft'
-import IconButton from '@material-ui/core/IconButton'
-import LinearProgress from '@material-ui/core/LinearProgress'
-import MenuContext from 'material-ui-shell/lib/providers/Menu/Context'
-import MenuIcon from '@material-ui/icons/Menu'
 import React, { useContext } from 'react'
-import Toolbar from '@material-ui/core/Toolbar'
-import Typography from '@material-ui/core/Typography'
-import clsx from 'clsx'
-import { makeStyles, useTheme } from '@material-ui/core/styles'
+import MenuContext from 'material-ui-shell/lib/providers/Menu/Context'
+import { useTheme } from '@mui/material/styles'
 import { useConfig } from 'base-shell/lib/providers/Config'
-import { useIntl } from 'react-intl'
 import { useOnline } from 'base-shell/lib/providers/Online'
+import { useIntl } from 'react-intl'
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  LinearProgress,
+  Typography,
+} from '@mui/material'
+import { ChevronLeft, Menu as MenuIcon } from '@mui/icons-material'
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100vh',
-    overflow: 'hidden',
-  },
-  appBar: {
-    zIndex: theme.zIndex.drawer + 1,
-    transition: theme.transitions.create(['width', 'margin'], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-    maxHeight: 64,
-  },
-  appBarShift: {
-    width: (props) => `calc(100% - ${props.width}px)`,
-    transition: theme.transitions.create(['width', 'margin'], {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-  },
-  menuButton: {
-    marginLeft: -12,
-  },
-  hide: {
-    display: 'none',
-  },
-  toolbar: {
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    ...theme.mixins.toolbar,
-  },
-  offlineIndicator: {
-    position: 'absolute',
-    display: 'flex',
-    alignItems: 'center',
-    backgroundColor: theme.palette.secondary.main,
-    justifyContent: 'center',
-    right: 0,
-    left: 0,
-    height: (props) => props.offlineIndicatorHeight,
-  },
-  content: {
-    flex: 1,
-    overflow: 'auto',
-  },
-  grow: {
-    flex: '1 1 auto',
-  },
-}))
-
-const Page = ({ children, pageTitle, onBackClick, isLoading }) => {
+export default function ({
+  children,
+  pageTitle,
+  onBackClick,
+  isLoading,
+  appBarContent = null,
+  contentStyle,
+  tabs = null,
+}) {
   const isOnline = useOnline()
   const theme = useTheme()
   const { appConfig } = useConfig()
   const { menu } = appConfig || {}
-  const { width = 240, offlineIndicatorHeight = 12 } = menu || {}
+  const { width = 240 } = menu || {}
 
-  const {
-    isDesktop,
-    isDesktopOpen,
-    setDesktopOpen,
-    isMobileOpen,
-    setMobileOpen,
-    setMini,
-  } = useContext(MenuContext)
+  const { toggleThis, isDesktop, isMenuOpen } = useContext(MenuContext)
   const intl = useIntl()
   let headerTitle = ''
 
@@ -88,63 +36,84 @@ const Page = ({ children, pageTitle, onBackClick, isLoading }) => {
     headerTitle = pageTitle
   }
 
-  const classes = useStyles({ width, offlineIndicatorHeight })
   const handleDrawerMenuClick = () => {
-    if (!isDesktopOpen) {
-      setMini(false)
-      setDesktopOpen(true)
+    if (!isMenuOpen) {
+      toggleThis('isMiniMode', false)
+      toggleThis('isMenuOpen', true)
       if (!isDesktop) {
-        setMobileOpen(!isMobileOpen)
+        toggleThis('isMobileMenuOpen')
       }
     } else {
-      setMobileOpen(!isMobileOpen)
+      toggleThis('isMobileMenuOpen')
     }
   }
 
   return (
-    <div className={classes.root}>
+    <div
+      style={{
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        overflow: 'hidden',
+      }}
+    >
       <AppBar
         position={isDesktop ? 'absolute' : undefined}
-        className={
-          isDesktop
-            ? clsx(classes.appBar, isDesktopOpen && classes.appBarShift)
-            : classes.appBar
-        }
+        sx={{
+          width:
+            isMenuOpen && isDesktop ? `calc(100% - ${width}px)` : undefined,
+          zIndex: theme.zIndex['drawer'],
+          transition: theme.transitions.create(['width', 'margin'], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.leavingScreen,
+          }),
+          maxHeight: 64,
+          marginLeft: -12,
+        }}
       >
         <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerMenuClick}
-            edge="start"
-            className={clsx(
-              classes.menuButton,
-              isDesktopOpen && isDesktop && classes.hide,
-              onBackClick && classes.hide
-            )}
-          >
-            <MenuIcon />
-          </IconButton>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={onBackClick}
-            className={clsx(classes.menuButton, !onBackClick && classes.hide)}
-          >
-            <ChevronLeft />
-          </IconButton>
-          {!onBackClick && isDesktopOpen && false && (
+          {(isMenuOpen && isDesktop) ||
+            (!onBackClick && (
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                onClick={handleDrawerMenuClick}
+                edge="start"
+              >
+                <MenuIcon />
+              </IconButton>
+            ))}
+          {/* james- check if this is dead code? */}
+          {onBackClick && (
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              onClick={onBackClick}
+            >
+              <ChevronLeft />
+            </IconButton>
+          )}
+          {!onBackClick && isMenuOpen && false && (
             <div style={{ marginRight: 32 }} />
           )}
-
+          {/* james- check if this is dead code? */}
           <Typography variant="h6" color="inherit" noWrap>
             {headerTitle}
           </Typography>
-          <div className={classes.grow} />
+          <div style={{ flex: '1 1 auto' }} />
+          {appBarContent}
         </Toolbar>
       </AppBar>
+      <div
+        style={{
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          //...theme.mixins.toolbar,
+          minHeight: 64, //height of AppBar
+        }}
+      />
 
-      <div className={classes.toolbar} />
       {isLoading && <LinearProgress />}
       {!isOnline && (
         <div
@@ -164,9 +133,10 @@ const Page = ({ children, pageTitle, onBackClick, isLoading }) => {
           </Typography>
         </div>
       )}
-      <main className={classes.content}>{children}</main>
+      {tabs}
+      <div style={{ flex: 1, overflow: 'auto', ...contentStyle }}>
+        {children}
+      </div>
     </div>
   )
 }
-
-export default Page

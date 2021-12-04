@@ -1,11 +1,23 @@
 {
   "name": "react-most-wanted",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "workspaces": [
     "packages/*"
   ],
-  "devDependencies": {},
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^2.34.0",
+    "@typescript-eslint/parser": "^2.34.0",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^6.8.0",
+    "eslint-config-react-app": "^5.2.1",
+    "eslint-plugin-flowtype": "^4.7.0",
+    "eslint-plugin-import": "^2.23.4",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-react": "^7.24.0",
+    "eslint-plugin-react-hooks": "^2.5.1",
+    "npm": "^6.14.8"
+  },
   "dependencies": {},
   "scripts": {
     "check": "npm-check -s -u",
@@ -26,6 +38,9 @@
     "redux",
     "firebase"
   ],
+  "eslintConfig": {
+    "extends": "react-app"
+  },
   "prettier": {
     "trailingComma": "es5",
     "tabWidth": 2,

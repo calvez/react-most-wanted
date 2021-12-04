@@ -7,21 +7,11 @@ module.exports = {
     umd: false,
   },
   webpack: {
-    /*
-    html: {
-      template: 'demo/public/index.html',
+    extra: {
+      devtool: 'inline-source-map',
     },
-    */
     aliases: {
       'material-ui-shell/lib': path.resolve('src'),
     },
-    extra: {
-      // Adding an extra rule which isn't managed by nwb
-      module: {
-        rules: [
-          { test: /\.md$/, loader: 'raw-loader' }
-        ]
-      },
-    }
-  }
+  },
 }

@@ -1,66 +1,47 @@
-# [![LOGO][logo-image]][logo-url]  **React Most Wanted** 
-[![Build Status][travis-image]][travis-url] [![License][license-image]][license-url] [![Code Style][code-style-image]][code-style-url]
+# React Most Wanted
 
-RMW is a set of features and best practices **that you can choose from** and use around your React projects, built on [Create React App](https://github.com/facebookincubator/create-react-app). You can checkout the demo at [react-most-wanted.com](https://react-most-wanted.com).
+React Most Wanted is a set of starter kits, tools, features, and best practices that you can choose from and use around your React projects.
 
-The features include:
-- **[Material UI](https://material-ui.com/)**: Material Design ready-to-use React Components
-- **[Code splitting](https://webpack.js.org/guides/code-splitting/)**: MPA (Multiple Page Application) ready. Large codebases can be splitted into separate bundles that load different parts of the application, lazy-loading the different bundles on demand.
-- **[Redux](https://redux.js.org/)**: predictable state management, by enforcing a strict unidirectional data flow and state immutability.
-- **[Firebase](https://firebase.google.com)**: use Firebase's platform as backend and database
-- **And many more**: Firebase and Redux sync, authentication, authorization (roles and permissions), push notifications UI integration, theming, internationalisation, built-in CI/CD, realtime forms...
+ [![Build Status](https://camo.githubusercontent.com/950b54ddc877fe1b2b0e99e78bf288d9e96062ae84a689ae1656dad5da14ba28/68747470733a2f2f7472617669732d63692e6f72672f546172696b48756265722f72656163742d6d6f73742d77616e7465642e7376673f6272616e63683d6d6173746572)](https://travis-ci.org/TarikHuber/react-most-wanted) [![License](https://camo.githubusercontent.com/11ead5f9f63a32c56b6558ec9cbfb25540fd265b6fbab25b51cb6925d2519ddb/68747470733a2f2f696d672e736869656c64732e696f2f6e706d2f6c2f657870726573732e737667)](https://github.com/TarikHuber/react-most-wanted/master/LICENSE) [![Code Style](https://camo.githubusercontent.com/c0486311910977832125780d8ef9ac681614939bd1b9328678007156a4648896/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f636f64655f7374796c652d70726574746965722d6666363962342e7376673f7374796c653d666c61742d737175617265)](https://github.com/prettier/prettier)
 
-To find out more about the features it includes, visit the [documentation page](https://react-most-wanted.com/docs).
+The **features** include:
 
-## How to start?
+* Build on [**Create React App**](https://reactjs.org/docs/create-a-new-react-app.html)
+* [**Material UI**](https://material-ui.com/): Material Design ready-to-use React Components
+* [**Code splitting**](https://webpack.js.org/guides/code-splitting/): MPA \(Multi Page Application\) ready. A Large codebase can be split into separate bundles that load different parts of the application, lazy-loading the different bundles on demand.
+* [**Firebase**](https://firebase.google.com/): Use Firebase's platform as a backend and database, with a sync between Firebase and the app state
+* The resulting App is a full functional [**PWA** ](https://web.dev/progressive-web-apps/) (Progressive Web App\) and has an "all 100" Points [**Lighthouse**](https://developers.google.com/web/tools/lighthouse) report
+* Authentication and authorization with roles and permissions
+* Push notifications within App Notifications UI
+* Theming
+* Internationalization
+* Build in CI/CD with [**Travis**](https://travis-ci.org/) and [**Browserstack**](https://www.browserstack.com/) (optional\)
+* Real-time Forms
+* and many more...
 
-To accomodate major use-cases, we have created three different shells that you can choose depending on your needs:  
-
-**[Base shell](./packages/base-shell/)**:
-the basic react setup: routing, internationalization and async load.
-
-```npx create-react-app my-app --template base```
-
-**[Material UI shell](./packages/material-ui-shell/)**:
-includes all features from the base shell expanded with [Material-UI](https://material-ui.com).
-
-```npx create-react-app my-app --template material-ui```
-
-
-**[React Most Wanted shell](./packages/rmw-shell)**:
-Base shell + Material UI shell + [Firebase](https://firebase.google.com/)
-
-```npx create-react-app my-app --template rmw```
+## [Documentation](https://rmw-1.gitbook.io/react-most-wanted/)
 
 ## Contributing
 
-We appreciate **any** contribution! 
+We appreciate **any** contribution!
 
-See [Contributing](./CONTRIBUTING.md) for details.
-
-## HELP WANTED
-
-If you want to contribute and don't know where to start. Here are some places you can start:
-- Cool  [Landing Page](https://github.com/TarikHuber/react-most-wanted/blob/master/packages/rmw-shell-new/cra-template-rmw/template/src/pages/LandingPage/LandingPage.js) for new ```rmw-shell``` package. It is completely separated from the rest of the Application so you can make it as you want. Just make sure to have at least 95 speed points with [Lighthouse](https://developers.google.com/web/tools/lighthouse)
-- Unit tests. Do I need to say anyting about this...
+See [Contributing](https://github.com/TarikHuber/react-most-wanted/blob/46dcb3da5ca32c3a92bab72a2573d05518c38a25/CONTRIBUTING.md) for details.
 
 ## Thanks
 
-[<img src="https://www.browserstack.com/images/mail/browserstack-logo-footer.png" width="120">](https://www.browserstack.com/)
+ 
 
-Thank you to [BrowserStack](https://www.browserstack.com/) for providing the infrastructure that allows us to test in real browsers.
+![](https://camo.githubusercontent.com/963fdc34956abc2bcb1db1d9db70d4c791956b2fc8dae36836b575b7795efe42/68747470733a2f2f7777772e62726f77736572737461636b2e636f6d2f696d616765732f6d61696c2f62726f77736572737461636b2d6c6f676f2d666f6f7465722e706e67)
 
+![](.gitbook/assets/spaces_gitbook_avatar-rectangle%20%281%29.png)
+
+Thanks to [BrowserStack](https://www.browserstack.com/) for providing the infrastructure that allows us to test in real browsers.
+
+Thanks to [GitBook ](https://www.gitbook.com/)for providing us a great documentation tool.
 
 ## License
 
-This project uses [MIT license](https://github.com/TarikHuber/react-most-wanted/blob/master/LICENSE).
+ This project uses the [MIT license](https://github.com/TarikHuber/react-most-wanted/blob/master/LICENSE).
 
 
-[logo-image]: https://www.react-most-wanted.com/favicon-32x32.png
-[logo-url]: https://github.com/TarikHuber/react-most-wanted/blob/master/README.md
-[travis-image]: https://travis-ci.org/TarikHuber/react-most-wanted.svg?branch=master
-[travis-url]: https://travis-ci.org/TarikHuber/react-most-wanted
-[license-image]: https://img.shields.io/npm/l/express.svg
-[license-url]: https://github.com/TarikHuber/react-most-wanted/master/LICENSE
-[code-style-image]: https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=flat-square
-[code-style-url]: https://github.com/prettier/prettier
+

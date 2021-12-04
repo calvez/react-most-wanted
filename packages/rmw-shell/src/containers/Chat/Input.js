@@ -1,133 +1,34 @@
-import Divider from '@material-ui/core/Divider'
-import IconButton from '@material-ui/core/IconButton'
-import Input from '@material-ui/core/Input'
-import ListItem from '@material-ui/core/ListItem'
-import ListItemText from '@material-ui/core/ListItemText'
-import Mic from './Mic'
-import MyLocation from '@material-ui/icons/MyLocation'
-import Photo from '@material-ui/icons/Photo'
-import PropTypes from 'prop-types'
-import React, { Component } from 'react'
-import ReactList from 'react-list'
-import Scrollbar from '../../components/Scrollbar'
-import Send from '@material-ui/icons/Send'
-import firebase from 'firebase'
-import { Fab } from '@material-ui/core'
-import { compose } from 'redux'
-import { connect } from 'react-redux'
-import { getGeolocation } from '../../utils/googleMaps'
-import { injectIntl } from 'react-intl'
-import { setSimpleValue } from '../../store/simpleValues/actions'
-import { withFirebase } from 'firekit-provider'
-import { withRouter } from 'react-router-dom'
-import { withTheme } from '@material-ui/core/styles'
-import CircularProgress from '@material-ui/core/CircularProgress'
+import React, { useState } from 'react'
+import Input from '@mui/material/Input'
+import { useTheme } from '@mui/material/styles'
+import Fab from '@mui/material/Fab'
+import Mic from '@mui/icons-material/Mic'
+import MyLocation from '@mui/icons-material/MyLocation'
+import CameraAlt from '@mui/icons-material/CameraAlt'
+import Send from '@mui/icons-material/Send'
+import { useIntl } from 'react-intl'
+import IconButton from '@mui/material/IconButton'
+import { useAuth } from 'base-shell/lib/providers/Auth'
+import { getLocation } from 'rmw-shell/lib/utils/location'
+import { CircularProgress } from '@mui/material'
+import { getDatabase, ref, set, push, serverTimestamp } from 'firebase/database'
+import {
+  getStorage,
+  ref as storageRef,
+  uploadString,
+  getDownloadURL,
+} from 'firebase/storage'
+import { getApp } from 'firebase/app'
 
-class ChatMessages extends Component {
-  constructor(props) {
-    super(props)
-    this.name = null
+export default function ({ path }) {
+  const theme = useTheme()
+  const intl = useIntl()
+  const { auth } = useAuth()
+  const [value, setValue] = useState('')
+  const [isUploading, setUploading] = useState(false)
+  const db = getDatabase()
 
-    this.state = {
-      value: '',
-      isUploading: false,
-    }
-  }
-
-  handleKeyDown = (e, onSucces) => {
-    if (e.keyCode === 13) {
-      e.preventDefault()
-      onSucces()
-    }
-  }
-
-  handleAddMessage = (type, message, key) => {
-    const { auth, firebaseApp, path, intl } = this.props
-
-    let newMessage = {
-      created: firebase.database.ServerValue.TIMESTAMP,
-      authorName: auth.displayName,
-      authorUid: auth.uid,
-      authorPhotoUrl: auth.photoURL,
-      languageCode: intl.formatMessage({
-        id: 'current_locale',
-        defaultMessage: 'en-US',
-      }),
-      type,
-    }
-
-    if (type === 'image') {
-      newMessage.image = message
-    } else if (type === 'location') {
-      newMessage.location = message
-    } else if (type === 'audio') {
-      newMessage.audio = message
-    } else {
-      if (message.startsWith('http') || message.startsWith('https')) {
-        newMessage.link = message
-        newMessage.type = 'link'
-      } else {
-        newMessage.message = message
-      }
-    }
-
-    this.setState({ value: '' })
-
-    if (this.name.state) {
-      this.name.state.hasValue = false
-    }
-
-    if (message && message.length > 0) {
-      if (key) {
-        firebaseApp
-          .database()
-          .ref(`${path}/${key}`)
-          .update(newMessage)
-      } else {
-        firebaseApp
-          .database()
-          .ref(path)
-          .push(newMessage)
-      }
-    }
-  }
-
-  renderItem = i => {
-    const { predefinedMessages, setSimpleValue } = this.props
-
-    const key = predefinedMessages[i].key
-    const message = predefinedMessages[i].val.message
-
-    return (
-      <div key={key}>
-        <ListItem
-          key={key}
-          onClick={() => {
-            setSimpleValue('chatMessageMenuOpen', false)
-            this.setState({ value: message })
-          }}
-          id={key}
-        >
-          <ListItemText primary={message} />
-
-          <IconButton
-            color="primary"
-            onClick={() => {
-              setSimpleValue('chatMessageMenuOpen', false)
-              this.handleAddMessage('text', message)
-            }}
-          >
-            <Send />
-          </IconButton>
-        </ListItem>
-        <Divider variant="inset" />
-      </div>
-    )
-  }
-
-  uploadSelectedFile = file => {
-    const { firebaseApp, intl, auth } = this.props
-
+  const uploadSelectedFile = (file) => {
     if (file === null) {
       return
     }
@@ -138,65 +39,110 @@ class ChatMessages extends Component {
       return
     }
 
-    this.setState({ isUploading: true })
+    setUploading(true)
 
     let reader = new FileReader()
 
-    const key = firebaseApp
-      .database()
-      .ref('/user_chat_messages/')
-      .push().key
+    const r = push(ref(db, '/user_chat_messages/'))
 
-    reader.onload = fileData => {
-      let uploadTask = firebaseApp
-        .storage()
-        .ref(`/user_chats/${auth.uid}/${key}.jpg`)
-        .putString(fileData.target.result, 'data_url')
-
-      uploadTask.on(
-        'state_changed',
-        () => {},
-        error => {
-          console.log(error)
-        },
-        () => {
-          uploadTask.snapshot.ref.getDownloadURL().then(downloadURL => {
-            this.handleAddMessage('image', downloadURL, key)
-            this.setState({ isUploading: false })
-          })
-        }
+    reader.onload = async (fileData) => {
+      const snap = await uploadString(
+        storageRef(
+          getStorage(getApp()),
+          `/user_chats/${auth.uid}/${r.key}.jpg`
+        ),
+        fileData.target.result,
+        'data_url'
       )
+
+      const downloadURL = await getDownloadURL(snap.ref)
+      sendMessage({
+        type: 'image',
+        message: '',
+        image: downloadURL,
+        key: r.key,
+      })
+      setUploading(false)
     }
 
     reader.readAsDataURL(file)
   }
 
-  render() {
-    const {
-      theme,
-      intl,
-      chatMessageMenuOpen,
-      predefinedMessages,
-      path,
-      receiverPath,
-      auth,
-    } = this.props
-    const { isUploading = false } = this.state
+  const sendMessage = async (props) => {
+    let newMessage = {
+      created: serverTimestamp(),
+      authorName: auth.displayName,
+      authorUid: auth.uid,
+      authorPhotoUrl: auth.photoURL,
+      languageCode: intl.formatMessage({
+        id: 'current_locale',
+        defaultMessage: 'en-US',
+      }),
+      ...props,
+    }
 
-    return (
+    await set(push(ref(db, `${path}`)), newMessage)
+    setValue('')
+  }
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        padding: 4,
+        paddingBottom: 8,
+        alignItems: 'center',
+      }}
+    >
       <div
         style={{
-          display: 'block',
-          alignItems: 'row',
-          justifyContent: 'center',
-          height: chatMessageMenuOpen ? 300 : 56,
-          backgroundColor: theme.palette.background.main,
-          margin: 5,
-          marginBottom: 15,
-          marginRight: 15,
-          marginLeft: 15,
+          margin: 0,
+          marginLeft: 8,
+          marginRight: 8,
+          paddingRight: 8,
+          backgroundColor: theme.palette.grey[300],
+          borderRadius: 22,
+          height: '100%',
+          flex: 1,
+          display: 'flex',
         }}
       >
+        <Input
+          style={{
+            height: 50,
+            left: 15,
+            color: 'black',
+          }}
+          multiline
+          rowsMax="2"
+          disableUnderline={true}
+          fullWidth={true}
+          autoFocus
+          value={value}
+          autoComplete="off"
+          placeholder={intl.formatMessage({
+            id: 'write_message_hint',
+            defaultMessage: 'Write message',
+          })}
+          onChange={(e) => setValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.keyCode === 13 && value.trim() !== '') {
+              e.preventDefault()
+              sendMessage({ type: 'text', message: value })
+            }
+          }}
+          type="Text"
+        />
+
+        <input
+          style={{ display: 'none' }}
+          accept="image/*"
+          id="icon-button-file"
+          type="file"
+          onChange={(e) => {
+            uploadSelectedFile(e.target.files[0])
+          }}
+        />
         <div
           style={{
             display: 'flex',
@@ -204,201 +150,64 @@ class ChatMessages extends Component {
             justifyContent: 'center',
           }}
         >
-          <div
-            style={{
-              backgroundColor:
-                theme.palette.type === 'light'
-                  ? theme.palette.grey[300]
-                  : theme.palette.grey[700],
-              flexGrow: 1,
-              height: 56,
-              borderRadius: 30,
-              paddingLeft: 8,
-              paddingRight: 8,
-              margin: 5,
-            }}
-          >
-            <div
-              style={{
-                position: 'relative',
-                display: 'inline-block',
-                width: '100%',
-              }}
-            >
-              <Input
-                id="message"
-                style={{
-                  position: 'absolute',
-                  height: 42,
-                  width: 'calc(100% - 72px)',
-                  lineHeight: undefined,
-                  top: -6,
-                  left: 15,
-                  right: 50,
-                }}
-                multiline
-                rowsMax="2"
-                disableUnderline={true}
-                onChange={e => {
-                  this.setState({ value: e.target.value })
-                }}
-                fullWidth={true}
-                autoFocus
-                value={this.state.value}
-                autoComplete="off"
-                placeholder={intl.formatMessage({ id: 'write_message_hint' })}
-                onKeyDown={e => {
-                  this.handleKeyDown(e, () =>
-                    this.handleAddMessage('text', this.state.value)
-                  )
-                }}
-                ref={field => {
-                  this.name = field
-                }}
-                type="Text"
-              />
-
-              <div
-                style={{
-                  position: 'absolute',
-                  right: 25,
-                  top: -10,
-                  width: 20,
-                  height: 0,
-                }}
+          <div>
+            <label htmlFor="icon-button-file">
+              <IconButton
+                disabled={isUploading}
+                color="primary"
+                aria-label="upload picture"
+                component="span"
+                size="small"
+                edge={false}
               >
-                <IconButton
-                  color={'primary'}
-                  onClick={() =>
-                    getGeolocation(
-                      pos => {
-                        if (!pos) {
-                          return
-                        } else if (!pos.coords) {
-                          return
-                        }
-
-                        const lat = pos.coords.latitude
-                        const long = pos.coords.longitude
-                        this.handleAddMessage(
-                          'location',
-                          `https://www.google.com/maps/place/${lat}+${long}/@${lat},${long}`
-                        )
-                      },
-                      error => console.log(error)
-                    )
-                  }
-                >
-                  <MyLocation />
-                </IconButton>
-              </div>
-
-              <input
-                style={{ display: 'none' }}
-                type="file"
-                onChange={e => {
-                  this.uploadSelectedFile(e.target.files[0])
-                }}
-                ref={input => {
-                  this.fileInput = input
-                }}
-              />
-
-              <div
-                style={{
-                  position: 'absolute',
-                  right: 55,
-                  top: -10,
-                  width: 20,
-                  height: 0,
-                }}
-              >
-                {!isUploading && (
-                  <IconButton
-                    color={'primary'}
-                    onClick={() => this.fileInput.click()}
-                  >
-                    <Photo />
-                  </IconButton>
-                )}
                 {isUploading && (
                   <CircularProgress
                     color="secondary"
                     style={{
                       width: 20,
                       height: 20,
-                      marginTop: 14,
-                      marginLeft: 15,
                     }}
                   />
                 )}
-              </div>
-            </div>
+                {!isUploading && <CameraAlt />}
+              </IconButton>
+            </label>
           </div>
-
-          {this.state.value !== '' && (
-            <Fab
-              color={'primary'}
-              disabled={
-                this.state.value === undefined || this.state.value === ''
-              }
-              onClick={() => this.handleAddMessage('text', this.state.value)}
-              aria-label="send"
-            >
-              <Send />
-            </Fab>
-          )}
-          {this.state.value === '' && (
-            <Mic
-              receiverPath={receiverPath}
-              handleAddMessage={this.handleAddMessage}
-              path={path}
-              auth={auth}
-            />
-          )}
         </div>
-        {chatMessageMenuOpen && (
-          <Scrollbar style={{ height: 200, backgroundColor: undefined }}>
-            <div style={{ padding: 10, paddingRight: 0 }}>
-              <ReactList
-                itemRenderer={this.renderItem}
-                length={predefinedMessages ? predefinedMessages.length : 0}
-                type="simple"
-              />
-            </div>
-          </Scrollbar>
-        )}
+        <IconButton
+          color="primary"
+          size="small"
+          onClick={async () => {
+            try {
+              const { coords } = await getLocation()
+              const lat = coords?.latitude
+              const long = coords?.longitude
+              sendMessage({
+                type: 'location',
+                message: '',
+                location: `https://www.google.com/maps/place/${lat}+${long}/@${lat},${long}`,
+                location_lat: lat,
+                location_lng: long,
+              })
+            } catch (error) {}
+          }}
+        >
+          <MyLocation />
+        </IconButton>
       </div>
-    )
-  }
+
+      <Fab
+        onClick={
+          value !== ''
+            ? () => sendMessage({ type: 'text', message: value })
+            : undefined
+        }
+        color="secondary"
+        size="medium"
+      >
+        {value === '' && <Mic />}
+        {value !== '' && <Send />}
+      </Fab>
+    </div>
+  )
 }
-
-ChatMessages.propTypes = {
-  theme: PropTypes.object.isRequired,
-  auth: PropTypes.object.isRequired,
-}
-
-const mapStateToProps = (state, ownPops) => {
-  const { auth, simpleValues } = state
-  const { uid, path } = ownPops
-
-  const chatMessageMenuOpen = simpleValues['chatMessageMenuOpen'] === true
-  const imageDialogOpen = simpleValues.chatOpenImageDialog
-
-  return {
-    imageDialogOpen,
-    simpleValues: simpleValues ? simpleValues : [],
-    path,
-    uid,
-    chatMessageMenuOpen,
-    auth,
-  }
-}
-
-export default compose(
-  connect(mapStateToProps, { setSimpleValue }),
-  injectIntl,
-  withRouter,
-  withFirebase,
-  withTheme
-)(ChatMessages)

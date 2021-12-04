@@ -7,12 +7,9 @@ module.exports = {
     umd: false,
   },
   webpack: {
-    /*
-    html: {
-      template: 'demo/template/public/index.html',
+    extra: {
+      devtool: 'inline-source-map',
     },
-    */
-
     aliases: {
       'base-shell/lib': path.resolve('src'),
     },

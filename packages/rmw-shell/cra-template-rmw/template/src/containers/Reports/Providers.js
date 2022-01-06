@@ -2,7 +2,10 @@ import React, { useEffect } from 'react'
 import { useIntl } from 'react-intl'
 import { usePaths } from 'rmw-shell/lib/providers/Firebase/Paths'
 import { useTheme } from '@mui/material/styles'
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { Doughnut } from 'react-chartjs-2'
+
+ChartJS.register(ArcElement, Tooltip, Legend)
 
 const providerPath = '/provider_count'
 
@@ -68,8 +71,17 @@ export default function () {
   }
 
   return (
-    <div>
-      <Doughnut data={providersComponentData} />
+    <div
+      style={{
+        width: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <div style={{ width: '38vh' }}>
+        <Doughnut data={providersComponentData} />
+      </div>
     </div>
   )
 }

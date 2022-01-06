@@ -1,49 +1,29 @@
-import '@formatjs/intl-relativetimeformat/polyfill'
 import LocaleProvider from '../../providers/Locale/Provider'
 import React, { Suspense, useEffect, useState } from 'react'
-//import areIntlLocalesSupported from 'intl-locales-supported'
-//import intl from 'intl'
 import { IntlProvider } from 'react-intl'
-import { Switch } from 'react-router-dom'
 import { getLocaleMessages } from '../../utils/locale'
-import { useConfig } from '../../providers/Config'
 import { useLocale } from '../../providers/Locale'
+import { useRoutes } from 'react-router-dom'
+import UpdateProvider from '../../providers/Update/Provider'
+import AuthProvider from '../../providers/Auth/Provider'
+import AddToHomeScreenProvider from '../../providers/AddToHomeScreen/Provider'
+import OnlineProvider from '../../providers/Online/Provider'
+import SimpleValuesProvider from '../../providers/SimpleValues/Provider'
+import { useConfig } from '../../providers/Config'
 
-/*
-const loadLocalePolyfill = (locale) => {
-  // START: Intl polyfill
-  // Required for working on Safari
-  // Code from here: https://formatjs.io/guides/runtime-environments/
-  let localesMyAppSupports = [locale]
-
-  if (global.Intl) {
-    // Determine if the built-in `Intl` has the locale data we need.
-    if (!areIntlLocalesSupported(localesMyAppSupports)) {
-      // `Intl` exists, but it doesn't have the data we need, so load the
-      // polyfill and replace the constructors with need with the polyfill's.
-      let IntlPolyfill = intl
-      Intl.NumberFormat = IntlPolyfill.NumberFormat
-      Intl.DateTimeFormat = IntlPolyfill.DateTimeFormat
-    }
-  } else {
-    // No `Intl`, so use and load the polyfill.
-    global.Intl = intl
-  }
-  // END: Intl polyfill
-}
-
-*/
-
-export const LayoutContent = () => {
+export const LayoutContent = ({ appConfig = {} }) => {
   const [messages, setMessages] = useState([])
-  const { appConfig } = useConfig()
   const {
     components,
     routes = [],
     containers,
     locale: confLocale,
     getDefaultRoutes,
+    auth,
+    update,
   } = appConfig || {}
+  const { persistKey } = auth || {}
+  const { checkInterval = 5000 } = update || {}
   const { Menu, Loading } = components || {}
   const { locales, onError } = confLocale || {}
   const { LayoutContainer = React.Fragment } = containers || {}
@@ -75,26 +55,29 @@ export const LayoutContent = () => {
   }, [locale, locales])
 
   return (
-    <IntlProvider
-      locale={locale}
-      key={locale}
-      messages={messages}
-      onError={onError}
-    >
-      <LayoutContainer>
-        {Menu && <Menu />}
-        <Suspense fallback={<Loading />}>
-          <Switch>
-            {routes.map((Route, i) => {
-              return React.cloneElement(Route, { key: `@customRoutes/${i}` })
-            })}
-            {defaultRoutes.map((Route, i) => {
-              return React.cloneElement(Route, { key: `@defaultRoutes/${i}` })
-            })}
-          </Switch>
-        </Suspense>
-      </LayoutContainer>
-    </IntlProvider>
+    <AuthProvider persistKey={persistKey}>
+      <SimpleValuesProvider>
+        <AddToHomeScreenProvider>
+          <UpdateProvider checkInterval={checkInterval}>
+            <OnlineProvider>
+              <IntlProvider
+                locale={locale}
+                key={locale}
+                messages={messages}
+                onError={onError}
+              >
+                <LayoutContainer>
+                  <Suspense fallback={<Loading />}>{Menu && <Menu />}</Suspense>
+                  <Suspense fallback={<Loading />}>
+                    {useRoutes([...routes, ...defaultRoutes])}
+                  </Suspense>
+                </LayoutContainer>
+              </IntlProvider>
+            </OnlineProvider>
+          </UpdateProvider>
+        </AddToHomeScreenProvider>
+      </SimpleValuesProvider>
+    </AuthProvider>
   )
 }
 

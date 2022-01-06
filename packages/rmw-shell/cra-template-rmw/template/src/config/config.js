@@ -5,9 +5,12 @@ import themes from './themes'
 import parseLanguages from 'base-shell/lib/utils/locale'
 import grants from './grants'
 import Loading from 'material-ui-shell/lib/components/Loading/Loading'
-import getDefaultRoutes from './getDefaultRoutes'
-import { defaultUserData, isGranted } from 'rmw-shell/lib/utils/auth'
-import { getDatabase, ref, onValue, get, update, off } from 'firebase/database'
+import {
+  defaultUserData,
+  isGranted,
+  isAnyGranted,
+} from 'rmw-shell/lib/utils/auth'
+import { getDefaultRoutes } from './getDefaultRoutes'
 
 const config = {
   firebase: {
@@ -76,6 +79,9 @@ const config = {
     persistKey: 'base-shell:auth',
     signInURL: '/signin',
     onAuthStateChanged: async (user, auth) => {
+      const { getDatabase, ref, onValue, get, update, off } = await import(
+        'firebase/database'
+      )
       const db = getDatabase()
 
       try {
@@ -103,6 +109,7 @@ const config = {
             notificationsDisabled: notifcationsDisabledSnap.val(),
             isAdmin: !!isAdminSnap.val(),
             isGranted,
+            isAnyGranted,
           })
 
           update(ref(db, `users/${user.uid}`), {
@@ -130,7 +137,7 @@ const config = {
       }
     },
   },
-  getDefaultRoutes,
+  getDefaultRoutes: getDefaultRoutes,
   routes,
   locale: {
     locales,
@@ -163,9 +170,6 @@ const config = {
   },
 
   containers: {
-    AppContainer: lazy(() =>
-      import('material-ui-shell/lib/containers/AppContainer/AppContainer')
-    ),
     LayoutContainer: lazy(() =>
       import('rmw-shell/lib/containers/LayoutContainer/LayoutContainer')
     ),

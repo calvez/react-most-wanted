@@ -1,32 +1,13 @@
 import React from 'react'
-import {
-  CheckCircleOutline as CheckCircleOutlineIcon,
-  TrackChanges,
-  FileCopy,
-} from '@mui/icons-material'
-import {
-  Tooltip,
-  Typography,
-  Card,
-  CardContent,
-  IconButton,
-  Button,
-} from '@mui/material'
-import { withStyles } from '@mui/styles'
-import { lighten, darken } from '@mui/material/styles'
-
-const LightTooltip = withStyles((theme) => {
-  const getBackgroundColor = theme.palette.type === 'light' ? lighten : darken
-  return {
-    tooltip: {
-      ...theme.typography.body2,
-      borderRadius: theme.shape.borderRadius,
-      display: 'flex',
-      padding: '6px 10px',
-      backgroundColor: getBackgroundColor(theme.palette.success.main, 0.1),
-    },
-  }
-})(Tooltip)
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
+import TrackChanges from '@mui/icons-material/TrackChanges'
+import FileCopy from '@mui/icons-material/FileCopy'
+import Tooltip from '@mui/material/Tooltip'
+import Typography from '@mui/material/Typography'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import IconButton from '@mui/material/IconButton'
+import Button from '@mui/material/Button'
 
 const PackageCard = ({ title, command, description, icons }) => {
   const [open, setOpen] = React.useState(false)
@@ -60,7 +41,7 @@ const PackageCard = ({ title, command, description, icons }) => {
             {command}
           </Typography>
           {/* <Tooltip */}
-          <LightTooltip
+          <Tooltip
             title={
               <Button color="inherit" startIcon={<CheckCircleOutlineIcon />}>
                 Copied to clipboard!
@@ -87,7 +68,7 @@ const PackageCard = ({ title, command, description, icons }) => {
             >
               <FileCopy />
             </IconButton>
-          </LightTooltip>
+          </Tooltip>
         </div>
         <br />
         {icons}

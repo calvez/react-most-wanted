@@ -1,11 +1,35 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import { SwipeableDrawer, styled } from '@mui/material'
-import { useMenu } from 'material-ui-shell/lib/providers/Menu'
-import { useTheme as useAppTheme } from 'material-ui-shell/lib/providers/Theme'
 import { useConfig } from 'base-shell/lib/providers/Config'
+import * as BS from "react-bootstrap"
 
+const ResponsiveMenu = ({ children }) => {
+  const { appConfig } = useConfig()
+  const { menu } = appConfig;
+  const bootstrapClass = menu?.bootstrapClass || "";
+
+  return (
+    <BS.Row>
+      <BS.Nav>
+        <BS.Container>
+          <BS.Row className={bootstrapClass}>
+            {children}
+          </BS.Row>
+        </BS.Container>
+      </BS.Nav>
+    </BS.Row>
+  )
+};
+
+ResponsiveMenu.propTypes = {
+  children: PropTypes.any,
+};
+
+export default ResponsiveMenu
+
+/*
 const iOS = process.browser && /iPad|iPhone|iPod/.test(navigator.userAgent)
+
 
 const CustomSwipeableDrawer = styled(SwipeableDrawer)(
   ({ theme, width, menucontext: { isDesktop, isMenuOpen, isMiniMode } }) => {
@@ -24,8 +48,8 @@ const CustomSwipeableDrawer = styled(SwipeableDrawer)(
             !isMiniMode && !isMenuOpen
               ? 0
               : !isMenuOpen
-              ? theme.spacing(9)
-              : width,
+                ? theme.spacing(9)
+                : width,
         },
       }
     } else {
@@ -79,8 +103,4 @@ const ResponsiveMenu = ({ children }) => {
     </div>
   )
 }
-ResponsiveMenu.propTypes = {
-  children: PropTypes.any,
-}
-
-export default ResponsiveMenu
+*/

@@ -1,6 +1,6 @@
 {
   "name": "cra-template-material-ui",
-  "version": "3.1.1",
+  "version": "3.1.6",
   "keywords": [
     "react",
     "create-react-app",
@@ -17,6 +17,9 @@
   "license": "MIT",
   "engines": {
     "node": ">=8"
+  },
+  "scripts": {
+    "release": "release-it -- patch"
   },
   "bugs": {
     "url": "https://github.com/TarikHuber/react-most-wanted/issues"

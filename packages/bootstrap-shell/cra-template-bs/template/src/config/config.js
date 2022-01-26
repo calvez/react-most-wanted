@@ -1,57 +1,49 @@
 import { lazy } from 'react'
+import routes from './routes'
 import parseLanguages from 'base-shell/lib/utils/locale'
+import locales from './locales'
+import React from 'react'
+import menuItems from './menuItems'
+
+const Loading = () => <div>Loading...</div>
 
 const config = {
-    containers: {
-        AppContainer: lazy(() =>
-            import('bootstrap-shell/lib/containers/AppContainer/AppContainer')
-        ),
+  containers: {
+    LayoutContainer: lazy(() =>
+      import('bootstrap-shell/lib/containers/LayoutContainer/LayoutContainer')
+    ),
+  },
+  components: {
+    Loading,
+  },
+  auth: {
+    signInURL: '/signin',
+  },
+  pwa: {
+    useiOSPWAPrompt: true,
+    iOSPWAPromptProps: {},
+  },
+  routes,
+  locale: {
+    locales,
+    defaultLocale: parseLanguages(['en', 'de', 'ru'], 'en'),
+    onError: (e) => {
+      //console.warn(e)
+      return
     },
-    components: {
-        Menu: lazy(() => import('bootstrap-shell/lib/containers/Menu/Menu')),
-    },
-    auth: {
-        signInURL: '/signin',
-    },
-    pwa: {
-        useiOSPWAPrompt: true,
-        iOSPWAPromptProps: {},
-    },
-    //routes,
-    locale: {
-        /*locales,
-        defaultLocale: parseLanguages(['en', 'de', 'ru'], 'en'),
-        onError: (e) => {
-            //console.warn(e)
-            return
-        },*/
-    },
-    menu: {
-        MenuHeader: lazy(() => import('bootstrap-shell/lib/components/Menu/MenuHeader/MenuHeader')),
-        MenuContent: lazy(() => import('bootstrap-shell/lib/components/Menu/MenuContent/MenuContent')),
-        /*
-        width: 240,
-        offlineIndicatorHeight: 12,
-        initialAuthMenuOpen: false,
-        initialMiniMode: false,
-        initialMenuOpen: true,
-        initialMobileMenuOpen: false,
-        initialMiniSwitchVisibility: true,
-        
-        useWindowWatcher: false,
-        */
-    },
-    theme: {
-        /*themes,
-        defaultThemeID: 'default',
-        defaultIsDarkMode: false,
-        defaultIsRTL: false, //change this to true for default Right to Left Language support
-        */
-    },
-    pages: {
-        LandingPage: lazy(() => import('../pages/Home/Home')),
-        PageNotFound: lazy(() => import('../pages/PageNotFound/PageNotFound')),
-    },
+  },
+  menu: {
+    width: 240,
+    initialMobileMenuOpen: false,
+    MenuRight: lazy(() => import('../components/Menu/MenuRight')),
+    menuItems,
+  },
+  theme: {},
+  pages: {
+    // The LandingPage is completely separeted from the App and is not under the LayoutContainer
+    LandingPage: lazy(() => import('../pages/LandingPage')),
+    PageNotFound: lazy(() => import('../pages/PageNotFound/PageNotFound')),
+  },
 }
 
 export default config
